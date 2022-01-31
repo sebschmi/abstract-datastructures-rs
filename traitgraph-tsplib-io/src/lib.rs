@@ -1,4 +1,8 @@
-use crate::interface::{DynamicGraph, StaticGraph};
+#![warn(missing_docs)]
+//! This crate offers functions to read and write graphs in TSPLIB format.
+
+use traitgraph::interface::{DynamicGraph, StaticGraph};
+use traitgraph::index::GraphIndex;
 use std::io::{BufRead, BufReader, Read, Write};
 
 /// Write the graph as Hamiltonian circuit problem encoded as ATSP in TSPLIB format (used by concorde).
@@ -230,9 +234,9 @@ pub fn read_hamcircuit_from_tsplib_tsp<Graph: DynamicGraph, Reader: Read>(
 
 #[cfg(test)]
 mod tests {
-    use crate::implementation::petgraph_impl;
-    use crate::interface::{ImmutableGraphContainer, MutableGraphContainer};
-    use crate::io::hamcircuit::{read_hamcircuit_from_tsplib_tsp, write_hamcircuit_as_tsplib_tsp};
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
+    use crate::{read_hamcircuit_from_tsplib_tsp, write_hamcircuit_as_tsplib_tsp};
     use std::io::{BufReader, BufWriter};
 
     #[test]
@@ -265,6 +269,30 @@ mod tests {
                     result.contains_edge_between(n1, n2)
                 );
             }
+        }
+    }
+}
+
+/// Write the graph in the following format, ignoring node and edge data.
+///
+/// ```text
+/// <node count> <edge count>
+/// <from node> <to node>
+/// ```
+///
+/// The second line is repeated for each edge.
+// TODO this function is unrelated to tsplib and should be moved somewhere else.
+pub fn write_topology<Graph: StaticGraph, Writer: Write>(graph: &Graph, writer: &mut Writer) {
+    writeln!(writer, "{} {}", graph.node_count(), graph.edge_count()).unwrap();
+    for node in graph.node_indices() {
+        for out_neighbor in graph.out_neighbors(node) {
+            writeln!(
+                writer,
+                "{} {}",
+                node.as_usize(),
+                out_neighbor.node_id.as_usize()
+            )
+                .unwrap();
         }
     }
 }

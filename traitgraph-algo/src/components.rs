@@ -1,11 +1,11 @@
 use super::traversal::{
     PostOrderForwardDfs, PreOrderBackwardBfs, PreOrderForwardBfs, PreOrderUndirectedBfs,
 };
-use crate::algo::traversal::ForbiddenEdge;
-use crate::index::GraphIndex;
-use crate::index::OptionalGraphIndex;
-use crate::interface::NodeOrEdge;
-use crate::interface::{DynamicGraph, MutableGraphContainer, StaticGraph};
+use crate::traversal::ForbiddenEdge;
+use traitgraph::index::GraphIndex;
+use traitgraph::index::OptionalGraphIndex;
+use traitgraph::interface::NodeOrEdge;
+use traitgraph::interface::{DynamicGraph, MutableGraphContainer, StaticGraph};
 use std::collections::LinkedList;
 
 /// Returns the weakly connected components of a graph.
@@ -296,12 +296,12 @@ pub fn is_cycle<Graph: StaticGraph>(graph: &Graph) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::algo::components::{
+    use crate::components::{
         decompose_strongly_connected_components, decompose_weakly_connected_components,
         extract_subgraphs_from_node_mapping, is_strongly_connected, naively_compute_strong_bridges,
     };
-    use crate::implementation::petgraph_impl;
-    use crate::interface::{GraphBase, ImmutableGraphContainer, MutableGraphContainer};
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::{GraphBase, ImmutableGraphContainer, MutableGraphContainer};
     use std::fmt::Debug;
 
     fn debug_assert_node_data<Graph: ImmutableGraphContainer>(

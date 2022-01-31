@@ -1,7 +1,7 @@
-use crate::algo::traversal::{
+use crate::traversal::{
     BackwardNeighborStrategy, ForwardNeighborStrategy, TraversalNeighborStrategy,
 };
-use crate::interface::{GraphBase, NavigableGraph, NodeOrEdge, StaticGraph};
+use traitgraph::interface::{GraphBase, NavigableGraph, NodeOrEdge, StaticGraph};
 use std::marker::PhantomData;
 
 /// An iterator over the univocal extension of a node or edge.
@@ -164,9 +164,9 @@ pub fn is_edge_self_bivalent<Graph: StaticGraph>(graph: &Graph, edge_id: Graph::
 
 #[cfg(test)]
 mod tests {
-    use crate::algo::traversal::univocal_traversal::is_edge_self_bivalent;
-    use crate::implementation::petgraph_impl;
-    use crate::interface::MutableGraphContainer;
+    use crate::traversal::univocal_traversal::is_edge_self_bivalent;
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::MutableGraphContainer;
 
     #[test]
     fn test_is_edge_self_bivalent_simple() {

@@ -1,7 +1,7 @@
-use crate::algo::queue::BidirectedQueue;
-use crate::index::{GraphIndex, OptionalGraphIndex};
-use crate::interface::NodeOrEdge;
-use crate::interface::{GraphBase, ImmutableGraphContainer, NavigableGraph, Neighbor, StaticGraph};
+use crate::queue::BidirectedQueue;
+use traitgraph::index::{GraphIndex, OptionalGraphIndex};
+use traitgraph::interface::NodeOrEdge;
+use traitgraph::interface::{GraphBase, ImmutableGraphContainer, NavigableGraph, Neighbor, StaticGraph};
 use std::collections::VecDeque;
 use std::iter::IntoIterator;
 use std::marker::PhantomData;
@@ -558,9 +558,9 @@ impl<Graph: GraphBase, Queue: BidirectedQueue<Graph::NodeIndex>>
 
 #[cfg(test)]
 mod test {
-    use crate::algo::traversal::{DfsPostOrderTraversal, ForwardNeighborStrategy};
-    use crate::implementation::petgraph_impl;
-    use crate::interface::{MutableGraphContainer, NavigableGraph};
+    use crate::traversal::{DfsPostOrderTraversal, ForwardNeighborStrategy};
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::{MutableGraphContainer, NavigableGraph};
     use std::collections::VecDeque;
 
     #[test]

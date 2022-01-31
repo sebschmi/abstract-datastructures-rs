@@ -1,5 +1,4 @@
-use crate::algo::traversal::univocal_traversal::UnivocalIterator;
-use crate::interface::{GraphBase, NodeOrEdge, StaticGraph};
+use crate::interface::{GraphBase, StaticGraph};
 use traitsequence::interface::Sequence;
 
 /// A sequence of nodes in a graph, where each consecutive pair of nodes is connected by an edge.
@@ -8,7 +7,9 @@ pub trait NodeWalk<'a, Graph: GraphBase, NodeSubwalk: NodeWalk<'a, Graph, NodeSu
 where
     Graph::NodeIndex: 'a,
 {
-    /// Computes the trivial heart of the walk, or returns `None` if the walk is non-trivial.
+    // TODO these methods fit better into the omnitig crate.
+
+    /*/// Computes the trivial heart of the walk, or returns `None` if the walk is non-trivial.
     /// The heart is returned as the index of the last split node and the index of the first join node of the walk.
     /// These are not part of the heart.
     fn compute_trivial_heart(&'a self, graph: &Graph) -> Option<(usize, usize)>
@@ -198,7 +199,7 @@ where
         }
 
         (original_offset, ResultWalk::from(result))
-    }
+    }*/
 
     /// Returns the edge walk represented by this node walk.
     /// If there is a consecutive pair of nodes with a multiedge, then None is returned.
@@ -250,7 +251,9 @@ pub trait EdgeWalk<'a, Graph: GraphBase, EdgeSubwalk: EdgeWalk<'a, Graph, EdgeSu
 where
     Graph::EdgeIndex: 'a,
 {
-    /// Computes the trivial heart of the walk, or returns `None` if the walk is non-trivial.
+    // TODO these methods fit better into the omnitig crate.
+
+    /*/// Computes the trivial heart of the walk, or returns `None` if the walk is non-trivial.
     /// The heart is returned as the index of the last split arc and the index of the first join arc of the walk.
     fn compute_trivial_heart(&'a self, graph: &Graph) -> Option<(usize, usize)>
     where
@@ -472,7 +475,7 @@ where
         walk.push(graph.edge_endpoints(self.last().cloned().unwrap()).to_node);
 
         Some(ResultWalk::from(walk))
-    }
+    }*/
 
     /// Returns true if this is a proper subwalk of the given walk.
     /// Proper means that the walks are not equal.

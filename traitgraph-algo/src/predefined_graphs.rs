@@ -1,4 +1,4 @@
-use crate::interface::DynamicGraph;
+use traitgraph::interface::DynamicGraph;
 use rand::seq::IteratorRandom;
 use rand::Rng;
 
@@ -140,8 +140,8 @@ pub fn create_random_graph<Graph: DynamicGraph, Random: Rng>(
 #[cfg(test)]
 mod tests {
     use super::create_binary_tree;
-    use crate::implementation::petgraph_impl;
-    use crate::interface::ImmutableGraphContainer;
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::ImmutableGraphContainer;
 
     #[test]
     fn test_create_binary_tree_2() {

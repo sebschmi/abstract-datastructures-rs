@@ -1,4 +1,4 @@
-use crate::interface::StaticGraph;
+use traitgraph::interface::StaticGraph;
 
 /// Returns true if the graph contains a Eulerian cycle.
 pub fn decomposes_into_eulerian_cycles<Graph: StaticGraph>(graph: &Graph) -> bool {

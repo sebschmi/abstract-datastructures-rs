@@ -1,4 +1,4 @@
-use crate::algo::dijkstra::DijkstraWeight;
+use crate::dijkstra::DijkstraWeight;
 
 macro_rules! impl_dijkstra_weight {
     ($weight_type:ty) => {

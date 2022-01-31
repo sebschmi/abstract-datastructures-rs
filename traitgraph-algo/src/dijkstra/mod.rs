@@ -1,5 +1,5 @@
-use crate::index::{GraphIndex, NodeIndex};
-use crate::interface::{GraphBase, StaticGraph};
+use traitgraph::index::{GraphIndex, NodeIndex};
+use traitgraph::interface::{GraphBase, StaticGraph};
 use std::collections::BinaryHeap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -316,9 +316,9 @@ impl<
 
 #[cfg(test)]
 mod tests {
-    use crate::algo::dijkstra::DefaultDijkstra;
-    use crate::implementation::petgraph_impl;
-    use crate::interface::MutableGraphContainer;
+    use crate::dijkstra::DefaultDijkstra;
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::MutableGraphContainer;
 
     #[test]
     fn test_dijkstra_simple() {
