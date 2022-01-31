@@ -1,0 +1,7 @@
+[workspace]
+
+members = ["traitgraph", "traitsequence"]
+
+[profile.release]
+debug = true
+lto = true
