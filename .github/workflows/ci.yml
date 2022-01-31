@@ -1,4 +1,4 @@
-name: Rust Backend Tests and Lints
+name: Tests and Lints
 
 on: [push, pull_request]
 
@@ -59,7 +59,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: ${{matrix.command.command}}
-          args: --manifest-path Cargo.toml ${{matrix.command.args}}
+          args: ${{matrix.command.args}}
 
   build_test_format_lint_optional:
     name: ${{matrix.command.name}} (${{matrix.toolchain}}, optional)
@@ -101,4 +101,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: ${{matrix.command.command}}
-          args: --manifest-path Cargo.toml ${{matrix.command.args}}
+          args: ${{matrix.command.args}}
