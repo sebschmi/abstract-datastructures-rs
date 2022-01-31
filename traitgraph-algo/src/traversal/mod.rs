@@ -1,10 +1,12 @@
 use crate::queue::BidirectedQueue;
-use traitgraph::index::{GraphIndex, OptionalGraphIndex};
-use traitgraph::interface::NodeOrEdge;
-use traitgraph::interface::{GraphBase, ImmutableGraphContainer, NavigableGraph, Neighbor, StaticGraph};
 use std::collections::VecDeque;
 use std::iter::IntoIterator;
 use std::marker::PhantomData;
+use traitgraph::index::{GraphIndex, OptionalGraphIndex};
+use traitgraph::interface::NodeOrEdge;
+use traitgraph::interface::{
+    GraphBase, ImmutableGraphContainer, NavigableGraph, Neighbor, StaticGraph,
+};
 
 /// Functions and structures related to univocal traversals.
 /// Univocal traversals are traversals along unique out-edges or unique in-edges in a graph.
@@ -559,9 +561,9 @@ impl<Graph: GraphBase, Queue: BidirectedQueue<Graph::NodeIndex>>
 #[cfg(test)]
 mod test {
     use crate::traversal::{DfsPostOrderTraversal, ForwardNeighborStrategy};
+    use std::collections::VecDeque;
     use traitgraph::implementation::petgraph_impl;
     use traitgraph::interface::{MutableGraphContainer, NavigableGraph};
-    use std::collections::VecDeque;
 
     #[test]
     fn test_postorder_traversal_simple() {

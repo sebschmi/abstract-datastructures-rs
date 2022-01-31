@@ -2,11 +2,11 @@ use super::traversal::{
     PostOrderForwardDfs, PreOrderBackwardBfs, PreOrderForwardBfs, PreOrderUndirectedBfs,
 };
 use crate::traversal::ForbiddenEdge;
+use std::collections::LinkedList;
 use traitgraph::index::GraphIndex;
 use traitgraph::index::OptionalGraphIndex;
 use traitgraph::interface::NodeOrEdge;
 use traitgraph::interface::{DynamicGraph, MutableGraphContainer, StaticGraph};
-use std::collections::LinkedList;
 
 /// Returns the weakly connected components of a graph.
 ///
@@ -300,9 +300,9 @@ mod tests {
         decompose_strongly_connected_components, decompose_weakly_connected_components,
         extract_subgraphs_from_node_mapping, is_strongly_connected, naively_compute_strong_bridges,
     };
+    use std::fmt::Debug;
     use traitgraph::implementation::petgraph_impl;
     use traitgraph::interface::{GraphBase, ImmutableGraphContainer, MutableGraphContainer};
-    use std::fmt::Debug;
 
     fn debug_assert_node_data<Graph: ImmutableGraphContainer>(
         graph: &Graph,

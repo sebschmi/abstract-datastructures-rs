@@ -1,8 +1,8 @@
 use crate::traversal::{
     BackwardNeighborStrategy, ForwardNeighborStrategy, TraversalNeighborStrategy,
 };
-use traitgraph::interface::{GraphBase, NavigableGraph, NodeOrEdge, StaticGraph};
 use std::marker::PhantomData;
+use traitgraph::interface::{GraphBase, NavigableGraph, NodeOrEdge, StaticGraph};
 
 /// An iterator over the univocal extension of a node or edge.
 /// The direction is defined by the `NeighborStrategy`.

@@ -1,6 +1,6 @@
-use traitgraph::interface::DynamicGraph;
 use rand::seq::IteratorRandom;
 use rand::Rng;
+use traitgraph::interface::DynamicGraph;
 
 /// Adds a binary tree to the given graph.
 /// The first added node is the root of the tree.

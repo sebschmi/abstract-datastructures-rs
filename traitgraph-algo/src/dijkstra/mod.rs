@@ -1,9 +1,9 @@
-use traitgraph::index::{GraphIndex, NodeIndex};
-use traitgraph::interface::{GraphBase, StaticGraph};
 use std::collections::BinaryHeap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::ops::Add;
+use traitgraph::index::{GraphIndex, NodeIndex};
+use traitgraph::interface::{GraphBase, StaticGraph};
 
 mod dijkstra_weight_implementations;
 

@@ -1,9 +1,9 @@
 #![warn(missing_docs)]
 //! This crate offers functions to read and write graphs in TSPLIB format.
 
-use traitgraph::interface::{DynamicGraph, StaticGraph};
-use traitgraph::index::GraphIndex;
 use std::io::{BufRead, BufReader, Read, Write};
+use traitgraph::index::GraphIndex;
+use traitgraph::interface::{DynamicGraph, StaticGraph};
 
 /// Write the graph as Hamiltonian circuit problem encoded as ATSP in TSPLIB format (used by concorde).
 pub fn write_hamcircuit_as_tsplib_atsp<Graph: StaticGraph, Writer: Write>(
@@ -234,10 +234,10 @@ pub fn read_hamcircuit_from_tsplib_tsp<Graph: DynamicGraph, Reader: Read>(
 
 #[cfg(test)]
 mod tests {
-    use traitgraph::implementation::petgraph_impl;
-    use traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
     use crate::{read_hamcircuit_from_tsplib_tsp, write_hamcircuit_as_tsplib_tsp};
     use std::io::{BufReader, BufWriter};
+    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
 
     #[test]
     fn test_write_read_simple() {
@@ -292,7 +292,7 @@ pub fn write_topology<Graph: StaticGraph, Writer: Write>(graph: &Graph, writer: 
                 node.as_usize(),
                 out_neighbor.node_id.as_usize()
             )
-                .unwrap();
+            .unwrap();
         }
     }
 }
