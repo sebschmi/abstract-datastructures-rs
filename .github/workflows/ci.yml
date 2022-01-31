@@ -17,7 +17,7 @@ jobs:
             args: --all-features --all --all-targets
           - name: Test
             command: test
-            args: --all-features --bins
+            args: --all-features
         include:
           - toolchain: stable
             command:
@@ -75,7 +75,7 @@ jobs:
             args: --all-features --all --all-targets
           - name: Test
             command: test
-            args: --all-features --bins
+            args: --all-features
 
     steps:
       - uses: actions/checkout@v2
