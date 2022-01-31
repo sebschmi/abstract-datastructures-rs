@@ -1,8 +1,7 @@
 # Traitgraph
 
-[![](http://meritbadge.herokuapp.com/traitgraph)](https://crates.io/crates/traitgraph)
 [![](https://docs.rs/traitgraph/badge.svg)](https://docs.rs/traitgraph)
-![](https://github.com/sebschmi/abstract-datastructures-rs/workflows/Tests%20and%20Lints/badge.svg?branch=master)
+![](https://github.com/sebschmi/abstract-datastructures-rs/workflows/Tests%20and%20Lints/badge.svg?branch=main)
 
 A Rust crate to represent and operate on graphs.
 
