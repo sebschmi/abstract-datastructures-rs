@@ -11,6 +11,7 @@ documentation = "https://docs.rs/traitsequence"
 repository = "https://github.com/algbio/practical-omnitigs"
 readme = "README.md"
 license = "BSD-2-Clause"
+rust-version = "1.49.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
