@@ -57,6 +57,39 @@ pub trait EdgeWalk<'a, Graph: GraphBase, EdgeSubwalk: EdgeWalk<'a, Graph, EdgeSu
 where
     Graph::EdgeIndex: 'a,
 {
+    /// Returns the node walk represented by this edge walk.
+    /// If this walk contains no edge, then None is returned.
+    /// If there is a consecutive pair of edges not connected by a node, then this method panics.
+    fn clone_as_node_walk<ResultWalk: From<Vec<Graph::NodeIndex>>>(
+        &'a self,
+        graph: &Graph,
+    ) -> Option<ResultWalk>
+    where
+        Graph: StaticGraph,
+    {
+        if self.is_empty() {
+            return None;
+        }
+
+        let mut walk = vec![
+            graph
+                .edge_endpoints(self.first().cloned().unwrap())
+                .from_node,
+        ];
+        for edge_pair in self.iter().take(self.len() - 1).zip(self.iter().skip(1)) {
+            let node = graph.edge_endpoints(*edge_pair.0).to_node;
+            debug_assert_eq!(
+                node,
+                graph.edge_endpoints(*edge_pair.1).from_node,
+                "Not a valid edge walk"
+            );
+            walk.push(node);
+        }
+        walk.push(graph.edge_endpoints(self.last().cloned().unwrap()).to_node);
+
+        Some(ResultWalk::from(walk))
+    }
+
     /// Returns true if this is a proper subwalk of the given walk.
     /// Proper means that the walks are not equal.
     fn is_proper_subwalk_of(&'a self, other: &Self) -> bool
