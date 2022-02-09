@@ -1,6 +1,6 @@
 [workspace]
 
-members = ["traitgraph", "traitsequence", "traitgraph-tsplib-io", "traitgraph-algo"]
+members = ["traitgraph", "traitsequence", "traitgraph-dimacs-io", "traitgraph-tsplib-io", "traitgraph-algo"]
 
 [profile.release]
 debug = true

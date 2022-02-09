@@ -659,6 +659,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "traitgraph-dimacs-io"
+version = "0.1.0"
+dependencies = [
+ "traitgraph 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "traitgraph-tsplib-io"
 version = "0.1.0"
 dependencies = [
