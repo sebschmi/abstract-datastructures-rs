@@ -1,10 +1,10 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::collections::{LinkedList, VecDeque};
-use traitgraph::algo::predefined_graphs::create_binary_tree;
-use traitgraph::algo::traversal::{
+use traitgraph::implementation::petgraph_impl;
+use traitgraph_algo::predefined_graphs::create_binary_tree;
+use traitgraph_algo::traversal::{
     BfsQueueStrategy, DfsQueueStrategy, ForwardNeighborStrategy, PreOrderTraversal,
 };
-use traitgraph::implementation::petgraph_impl;
 
 fn bench_petgraph_preorder_forward_bfs_traversal_linked_list_bintree_10(criterion: &mut Criterion) {
     let mut graph = petgraph_impl::new::<(), ()>();
