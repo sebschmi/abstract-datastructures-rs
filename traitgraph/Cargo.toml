@@ -16,7 +16,7 @@ rust-version = "1.49.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-petgraph = "0.5"
-num-traits = "0.2"
-bitvector = "0.1"
+petgraph = "0.5.1"
+num-traits = "0.2.14"
+bitvector = "0.1.5"
 traitsequence = "0.6.0"
