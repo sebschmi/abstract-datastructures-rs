@@ -2,7 +2,6 @@
 //! This crate offers functions to read and write graphs in TSPLIB format.
 
 use std::io::{BufRead, BufReader, Read, Write};
-use traitgraph::index::GraphIndex;
 use traitgraph::interface::{DynamicGraph, StaticGraph};
 
 /// Write the graph as Hamiltonian circuit problem encoded as ATSP in TSPLIB format (used by concorde).

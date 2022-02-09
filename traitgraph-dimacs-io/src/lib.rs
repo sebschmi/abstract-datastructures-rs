@@ -1,9 +1,9 @@
 #![warn(missing_docs)]
 //! This crate offers functions to read and write graphs in TSPLIB format.
 
-use std::io::{BufRead, BufReader, Read, Write};
+use std::io::Write;
 use traitgraph::index::GraphIndex;
-use traitgraph::interface::{StaticGraph};
+use traitgraph::interface::StaticGraph;
 
 /// Write the graph in the following format, ignoring node and edge data.
 ///
