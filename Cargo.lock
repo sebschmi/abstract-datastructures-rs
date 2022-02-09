@@ -576,7 +576,7 @@ dependencies = [
 
 [[package]]
 name = "traitgraph"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "bitvector",
  "num-traits",
@@ -586,9 +586,9 @@ dependencies = [
 
 [[package]]
 name = "traitgraph"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cc541f41e02e0918b7d68994457959f8842c767c2bd854c3751315ef3f7efb8"
+checksum = "b099a500945e8d085a7ba108c3a560b3f2208d7def5601ff5cdaa345219eabf8"
 dependencies = [
  "bitvector",
  "num-traits",
@@ -602,21 +602,21 @@ version = "0.6.1"
 dependencies = [
  "criterion",
  "rand",
- "traitgraph 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitgraph 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "traitgraph-dimacs-io"
 version = "0.6.0"
 dependencies = [
- "traitgraph 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitgraph 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "traitgraph-tsplib-io"
 version = "0.6.0"
 dependencies = [
- "traitgraph 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitgraph 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
