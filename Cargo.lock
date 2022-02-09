@@ -581,19 +581,7 @@ dependencies = [
  "bitvector",
  "num-traits",
  "petgraph",
- "traitsequence 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "traitgraph"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b099a500945e8d085a7ba108c3a560b3f2208d7def5601ff5cdaa345219eabf8"
-dependencies = [
- "bitvector",
- "num-traits",
- "petgraph",
- "traitsequence 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitsequence",
 ]
 
 [[package]]
@@ -602,32 +590,26 @@ version = "0.6.2"
 dependencies = [
  "criterion",
  "rand",
- "traitgraph 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitgraph",
 ]
 
 [[package]]
 name = "traitgraph-dimacs-io"
 version = "0.6.2"
 dependencies = [
- "traitgraph 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitgraph",
 ]
 
 [[package]]
 name = "traitgraph-tsplib-io"
 version = "0.6.2"
 dependencies = [
- "traitgraph 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "traitgraph",
 ]
 
 [[package]]
 name = "traitsequence"
 version = "0.6.0"
-
-[[package]]
-name = "traitsequence"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fc72819501e9c4430514249c67906b22235a0eb2ab30bf4ffebfdd69f32df3f"
 
 [[package]]
 name = "unicode-width"
