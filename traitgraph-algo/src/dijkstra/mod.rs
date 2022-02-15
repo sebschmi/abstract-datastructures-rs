@@ -8,9 +8,12 @@ use traitgraph::interface::{GraphBase, StaticGraph};
 mod dijkstra_weight_implementations;
 
 /// A Dijkstra implementation with a set of common optimisations.
-pub type DefaultDijkstra<Graph, WeightType> =
-    Dijkstra<Graph, WeightType, EpochNodeWeightArray<WeightType>>;
-//pub type DefaultDijkstra<'a, Graph> = Dijkstra<'a, Graph, Vec<usize>>;
+pub type DefaultDijkstra<Graph, WeightType> = Dijkstra<
+    Graph,
+    WeightType,
+    EpochNodeWeightArray<WeightType>,
+    BinaryHeap<std::cmp::Reverse<(WeightType, <Graph as GraphBase>::NodeIndex)>>,
+>;
 
 /// A weight-type usable in Dijkstra's algorithm.
 pub trait DijkstraWeight: Ord + Add<Output = Self> + Sized + Clone {
@@ -98,7 +101,7 @@ impl EpochArray {
 
     /// Outdate all indices.
     pub fn clear(&mut self) {
-        if self.current_epoch == u32::max_value() {
+        if self.current_epoch == u32::MAX {
             for epoch in self.epochs.iter_mut() {
                 *epoch = 0;
             }
@@ -109,6 +112,8 @@ impl EpochArray {
     }
 
     /// Set the given index as current.
+    ///
+    /// Safety: Undefined behaviour if the index is out of bounds of the epoch array.
     #[inline]
     pub fn update(&mut self, index: usize) {
         unsafe {
@@ -207,6 +212,34 @@ impl<IndexType: Sized + Eq, Graph: GraphBase<NodeIndex = NodeIndex<IndexType>>>
     }
 }
 
+/// A min-heap used in Dijkstra's shortest path algorithm.
+pub trait DijkstraHeap<WeightType, IndexType>: Default {
+    /// Insert an index-weight pair into the heap.
+    fn insert(&mut self, weight: WeightType, index: IndexType);
+
+    /// Remove the weight and index with the smallest weight from the heap.
+    fn remove_min(&mut self) -> Option<(WeightType, IndexType)>;
+
+    /// Remove all entries from the heap.
+    fn clear(&mut self);
+}
+
+impl<WeightType: Ord, IndexType: Ord> DijkstraHeap<WeightType, IndexType>
+    for BinaryHeap<std::cmp::Reverse<(WeightType, IndexType)>>
+{
+    fn insert(&mut self, weight: WeightType, index: IndexType) {
+        self.push(std::cmp::Reverse((weight, index)));
+    }
+
+    fn remove_min(&mut self) -> Option<(WeightType, IndexType)> {
+        self.pop().map(|packed| packed.0)
+    }
+
+    fn clear(&mut self) {
+        self.clear()
+    }
+}
+
 /// Data structure for Dijkstra's shortest path algorithm.
 ///
 /// This variant of Dijkstra's algorithm supports only computing the length of a shortest path, and not the shortest path itself.
@@ -215,11 +248,13 @@ pub struct Dijkstra<
     Graph: GraphBase,
     WeightType: DijkstraWeight,
     NodeWeights: NodeWeightArray<WeightType>,
+    Heap: DijkstraHeap<WeightType, Graph::NodeIndex>,
 > {
-    queue: BinaryHeap<std::cmp::Reverse<(WeightType, Graph::NodeIndex)>>,
+    heap: Heap,
     // back_pointers: Vec<Graph::OptionalNodeIndex>,
     node_weights: NodeWeights,
     graph: PhantomData<Graph>,
+    _weight_type_phantom: PhantomData<WeightType>,
 }
 
 impl<
@@ -227,15 +262,17 @@ impl<
         EdgeData: DijkstraWeightedEdgeData<WeightType>,
         Graph: StaticGraph<EdgeData = EdgeData>,
         NodeWeights: NodeWeightArray<WeightType>,
-    > Dijkstra<Graph, WeightType, NodeWeights>
+        Heap: DijkstraHeap<WeightType, Graph::NodeIndex>,
+    > Dijkstra<Graph, WeightType, NodeWeights, Heap>
 {
     /// Create the data structures for the given graph.
     pub fn new(graph: &Graph) -> Self {
         Self {
-            queue: BinaryHeap::new(),
+            heap: Default::default(),
             // back_pointers: vec![Default::default(); graph.node_count()],
             node_weights: NodeWeights::new(graph.node_count()),
             graph: Default::default(),
+            _weight_type_phantom: Default::default(),
         }
     }
 
@@ -253,8 +290,7 @@ impl<
         distances: &mut Vec<(Graph::NodeIndex, WeightType)>,
     ) {
         //println!("Shortest path lens of {}", source.as_usize());
-        self.queue
-            .push(std::cmp::Reverse((WeightType::zero(), source)));
+        self.heap.insert(WeightType::zero(), source);
         //self.back_pointers[source.as_usize()] = source.into();
         self.node_weights.set(source.as_usize(), WeightType::zero());
         distances.clear();
@@ -262,7 +298,7 @@ impl<
         //let mut iterations = 0;
         //let mut unnecessary_iterations = 0;
         //let max_iterations = self.graph.node_count();
-        while let Some(std::cmp::Reverse((weight, node_index))) = self.queue.pop() {
+        while let Some((weight, node_index)) = self.heap.remove_min() {
             //iterations += 1;
             //println!("Finalising node {}", node_index.as_usize());
             // Check if the node was already processed
@@ -297,16 +333,13 @@ impl<
                 let neighbor_weight = self.node_weights.get_mut(out_neighbor.node_id.as_usize());
                 if new_neighbor_weight < *neighbor_weight {
                     *neighbor_weight = new_neighbor_weight.clone();
-                    self.queue.push(std::cmp::Reverse((
-                        new_neighbor_weight,
-                        out_neighbor.node_id,
-                    )));
+                    self.heap.insert(new_neighbor_weight, out_neighbor.node_id);
                     //self.back_pointers[out_neighbor.node_id.as_usize()] = node_index.into();
                 }
             }
         }
 
-        self.queue.clear();
+        self.heap.clear();
         /*for back_pointer in &mut self.back_pointers {
             *back_pointer = Default::default();
         }*/
