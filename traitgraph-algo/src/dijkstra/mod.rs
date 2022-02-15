@@ -6,6 +6,8 @@ use traitgraph::index::{GraphIndex, NodeIndex};
 use traitgraph::interface::{GraphBase, StaticGraph};
 
 mod dijkstra_weight_implementations;
+#[cfg(feature = "hashbrown_dijkstra_node_weight_array")]
+mod hashbrown_dijkstra_node_weight_array;
 
 /// A Dijkstra implementation with a set of common optimisations.
 pub type DefaultDijkstra<Graph, WeightType> = Dijkstra<
