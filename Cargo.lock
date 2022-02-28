@@ -612,7 +612,7 @@ dependencies = [
 
 [[package]]
 name = "traitgraph-algo"
-version = "0.7.1"
+version = "0.8.0"
 dependencies = [
  "criterion",
  "hashbrown 0.12.0",
