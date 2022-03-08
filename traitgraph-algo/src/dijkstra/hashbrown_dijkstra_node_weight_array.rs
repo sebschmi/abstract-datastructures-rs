@@ -21,7 +21,9 @@ impl<WeightType: DijkstraWeight + Clone> NodeWeightArray<WeightType>
 
     fn get(&self, node_index: usize) -> WeightType {
         let key = ToOwnedUsize { value: node_index };
-        self.get(&key).cloned().unwrap_or_else(|| WeightType::infinity())
+        self.get(&key)
+            .cloned()
+            .unwrap_or_else(|| WeightType::infinity())
     }
 
     fn get_mut<'this: 'result, 'result>(
@@ -29,7 +31,8 @@ impl<WeightType: DijkstraWeight + Clone> NodeWeightArray<WeightType>
         node_index: usize,
     ) -> &'result mut WeightType {
         let key = ToOwnedUsize { value: node_index };
-        self.entry_ref(&key).or_insert_with(|| WeightType::infinity())
+        self.entry_ref(&key)
+            .or_insert_with(|| WeightType::infinity())
     }
 
     fn set(&mut self, node_index: usize, weight: WeightType) {
