@@ -5,13 +5,13 @@ categories = ["data-structures", "mathematics", "science"]
 keywords = ["graph", "trait", "abstract", "implementation", "algorithm"]
 version = "0.9.0"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
-edition = "2021"
+edition = "2018"
 homepage = "https://github.com/sebschmi/abstract-datastructures-rs"
 documentation = "https://docs.rs/traitgraph-algo"
 repository = "https://github.com/sebschmi/abstract-datastructures-rs"
 readme = "README.md"
 license = "BSD-2-Clause"
-rust-version = "1.58.1"
+rust-version = "1.49.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
