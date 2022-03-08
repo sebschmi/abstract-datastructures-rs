@@ -1,8 +1,11 @@
 use crate::dijkstra::{DijkstraWeight, NodeWeightArray};
 use hashbrown::HashMap;
 
+/// Wrapper around `usize` with a `From<&Self>` implementation.
+/// This is required to efficiently perform get-or-insert on a [hashbrown::HashMap].
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-struct ToOwnedUsize {
+pub struct ToOwnedUsize {
+    /// The wrapped value.
     pub value: usize,
 }
 
