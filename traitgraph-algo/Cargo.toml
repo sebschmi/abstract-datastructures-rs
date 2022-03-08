@@ -11,7 +11,7 @@ documentation = "https://docs.rs/traitgraph-algo"
 repository = "https://github.com/sebschmi/abstract-datastructures-rs"
 readme = "README.md"
 license = "BSD-2-Clause"
-rust-version = "1.49.0"
+rust-version = "1.56.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
