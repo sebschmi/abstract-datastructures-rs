@@ -94,7 +94,10 @@ impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType>
     }
 
     #[inline]
-    fn get_mut(&mut self, node_index: usize) -> &mut WeightType {
+    fn get_mut<'this: 'result, 'result>(
+        &'this mut self,
+        node_index: usize,
+    ) -> &'result mut WeightType {
         self.make_current(node_index);
         &mut self.weights[node_index]
     }

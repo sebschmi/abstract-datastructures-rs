@@ -53,7 +53,10 @@ pub trait NodeWeightArray<WeightType> {
     fn get(&self, node_index: usize) -> WeightType;
 
     /// Returns the current weight of the given node index as mutable reference.
-    fn get_mut(&mut self, node_index: usize) -> &mut WeightType;
+    fn get_mut<'this: 'result, 'result>(
+        &'this mut self,
+        node_index: usize,
+    ) -> &'result mut WeightType;
 
     /// Sets the current weight of the given node index.
     fn set(&mut self, node_index: usize, weight: WeightType);
@@ -73,7 +76,10 @@ impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType> for Vec<Weig
     }
 
     #[inline]
-    fn get_mut(&mut self, node_index: usize) -> &mut WeightType {
+    fn get_mut<'this: 'result, 'result>(
+        &'this mut self,
+        node_index: usize,
+    ) -> &'result mut WeightType {
         &mut self[node_index]
     }
 
