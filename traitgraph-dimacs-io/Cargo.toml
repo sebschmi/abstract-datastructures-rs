@@ -5,13 +5,13 @@ categories = ["data-structures", "mathematics", "science"]
 keywords = ["graph", "trait", "abstract", "implementation", "dimacs"]
 version = "0.7.0"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/sebschmi/abstract-datastructures-rs"
 documentation = "https://docs.rs/traitgraph-dimacs-io"
 repository = "https://github.com/sebschmi/abstract-datastructures-rs"
 readme = "README.md"
 license = "BSD-2-Clause"
-rust-version = "1.49.0"
+rust-version = "1.56.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
