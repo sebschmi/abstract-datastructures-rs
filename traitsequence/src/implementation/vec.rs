@@ -23,4 +23,8 @@ impl<'a, Item: 'a> OwnedSequence<'a, Item, [Item]> for Vec<Item> {}
 
 impl<'a, Item: 'a + Clone> CloneableSequence<'a, Item, [Item]> for Vec<Item> {}
 
-impl<'a, Item: 'a> EditableSequence<'a, Item, [Item]> for Vec<Item> {}
+impl<'a, Item: 'a> EditableSequence<'a, Item, [Item]> for Vec<Item> {
+    fn split_off(&'a mut self, at: usize) -> Self {
+        Vec::split_off(self, at)
+    }
+}

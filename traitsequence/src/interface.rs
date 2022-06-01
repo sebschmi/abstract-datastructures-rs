@@ -185,6 +185,9 @@ pub trait CloneableSequence<
 pub trait EditableSequence<'a, Item: 'a, Subsequence: Sequence<'a, Item, Subsequence> + ?Sized>:
     Sequence<'a, Item, Subsequence> + Extend<Item> + IntoIterator<Item = Item> + FromIterator<Item>
 {
+    /// See [Vec::split_off].
+    fn split_off(&'a mut self, at: usize) -> Self;
+
     /// Extend this sequence from a sequence of compatible items.
     fn extend_into<
         ExtensionItem: Into<Item>,
