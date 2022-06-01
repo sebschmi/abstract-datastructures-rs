@@ -210,6 +210,24 @@ macro_rules! impl_graph_index {
                 Self::from(self.as_usize() + Self::from(rhs).as_usize())
             }
         }
+
+        impl<IndexType: PrimInt + Hash> std::ops::Sub<usize>
+            for $OptionalGraphIndexType<IndexType>
+        {
+            type Output = Self;
+
+            fn sub(self, rhs: usize) -> Self::Output {
+                Self::from(self.as_usize().unwrap() - Self::from(rhs).as_usize().unwrap())
+            }
+        }
+
+        impl<IndexType: PrimInt + Hash> std::ops::Sub<usize> for $GraphIndexType<IndexType> {
+            type Output = Self;
+
+            fn sub(self, rhs: usize) -> Self::Output {
+                Self::from(self.as_usize() - Self::from(rhs).as_usize())
+            }
+        }
     };
 }
 
@@ -382,6 +400,22 @@ impl<
         if self.start < self.end {
             let result = Some(self.start);
             self.start = self.start + 1;
+            result
+        } else {
+            None
+        }
+    }
+}
+
+impl<
+        OptionalIndexType: OptionalGraphIndex<IndexType>,
+        IndexType: GraphIndex<OptionalIndexType> + std::ops::Sub<usize, Output = IndexType>,
+    > DoubleEndedIterator for GraphIndices<IndexType, OptionalIndexType>
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.start < self.end {
+            let result = Some(self.end - 1);
+            self.end = self.end - 1;
             result
         } else {
             None
