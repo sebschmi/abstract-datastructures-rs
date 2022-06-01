@@ -36,6 +36,7 @@ pub trait OptionalGraphIndex<MirrorGraphIndex: GraphIndex<Self>>:
     + From<Option<MirrorGraphIndex>>
     + Into<Option<MirrorGraphIndex>>
     + std::ops::Add<usize, Output = Self>
+    + std::ops::Sub<usize, Output = Self>
 {
     // We don't wanna have OptionalGraphIndex: Into<usize>, to make this type strong, i.e. make it hard to accidentally convert it to a different type.
     /// Get this index as `usize`, but return `None` if this index is marked as invalid.
@@ -82,6 +83,7 @@ pub trait GraphIndex<MirrorOptionalGraphIndex: OptionalGraphIndex<Self>>:
     + From<usize>
     + Into<MirrorOptionalGraphIndex>
     + std::ops::Add<usize, Output = Self>
+    + std::ops::Sub<usize, Output = Self>
 {
     // We don't wanna have GraphIndex: Into<usize>, to make this type strong, i.e. make it hard to accidentally convert it to a different type.
     /// Get this index as `usize`.
@@ -409,7 +411,7 @@ impl<
 
 impl<
         OptionalIndexType: OptionalGraphIndex<IndexType>,
-        IndexType: GraphIndex<OptionalIndexType> + std::ops::Sub<usize, Output = IndexType>,
+        IndexType: GraphIndex<OptionalIndexType>,
     > DoubleEndedIterator for GraphIndices<IndexType, OptionalIndexType>
 {
     fn next_back(&mut self) -> Option<Self::Item> {
