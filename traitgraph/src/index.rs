@@ -407,6 +407,11 @@ impl<
             None
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.end.as_usize() - self.start.as_usize();
+        (len, Some(len))
+    }
 }
 
 impl<
@@ -423,4 +428,11 @@ impl<
             None
         }
     }
+}
+
+impl<
+        OptionalIndexType: OptionalGraphIndex<IndexType>,
+        IndexType: GraphIndex<OptionalIndexType>,
+    > ExactSizeIterator for GraphIndices<IndexType, OptionalIndexType>
+{
 }
