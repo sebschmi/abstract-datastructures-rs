@@ -165,12 +165,12 @@ pub fn is_edge_self_bivalent<Graph: StaticGraph>(graph: &Graph, edge_id: Graph::
 #[cfg(test)]
 mod tests {
     use crate::traversal::univocal_traversal::is_edge_self_bivalent;
-    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::MutableGraphContainer;
 
     #[test]
     fn test_is_edge_self_bivalent_simple() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(());
         let n1 = graph.add_node(());
         let n2 = graph.add_node(());
@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn test_is_edge_self_bivalent_cycle() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(());
         let n1 = graph.add_node(());
         let n2 = graph.add_node(());

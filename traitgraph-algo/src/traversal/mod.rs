@@ -562,12 +562,12 @@ impl<Graph: GraphBase, Queue: BidirectedQueue<Graph::NodeIndex>>
 mod test {
     use crate::traversal::{DfsPostOrderTraversal, ForwardNeighborStrategy};
     use std::collections::VecDeque;
-    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::{MutableGraphContainer, NavigableGraph};
 
     #[test]
     fn test_postorder_traversal_simple() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);

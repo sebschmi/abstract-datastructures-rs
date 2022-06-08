@@ -235,12 +235,12 @@ pub fn read_hamcircuit_from_tsplib_tsp<Graph: DynamicGraph, Reader: Read>(
 mod tests {
     use crate::{read_hamcircuit_from_tsplib_tsp, write_hamcircuit_as_tsplib_tsp};
     use std::io::{BufReader, BufWriter};
-    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
 
     #[test]
     fn test_write_read_simple() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(());
         let n1 = graph.add_node(());
         let n2 = graph.add_node(());
@@ -254,7 +254,7 @@ mod tests {
 
         let mut writer = BufWriter::new(Vec::new());
         write_hamcircuit_as_tsplib_tsp(&graph, &mut writer);
-        let mut result = petgraph_impl::new::<(), ()>();
+        let mut result = PetGraph::<(), ()>::new();
         let buffer = writer.into_inner().unwrap();
         let mut reader = BufReader::new(buffer.as_slice());
         read_hamcircuit_from_tsplib_tsp(&mut result, &mut reader);

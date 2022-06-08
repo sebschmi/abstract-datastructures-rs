@@ -1,13 +1,13 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::collections::{LinkedList, VecDeque};
-use traitgraph::implementation::petgraph_impl;
+use traitgraph::implementation::petgraph_impl::PetGraph;
 use traitgraph_algo::predefined_graphs::create_binary_tree;
 use traitgraph_algo::traversal::{
     BfsQueueStrategy, DfsQueueStrategy, ForwardNeighborStrategy, PreOrderTraversal,
 };
 
 fn bench_petgraph_preorder_forward_bfs_traversal_linked_list_bintree_10(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 10).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, BfsQueueStrategy, LinkedList<_>>::new(
@@ -25,7 +25,7 @@ fn bench_petgraph_preorder_forward_bfs_traversal_linked_list_bintree_10(criterio
 }
 
 fn bench_petgraph_preorder_forward_bfs_traversal_linked_list_bintree_20(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 20).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, BfsQueueStrategy, LinkedList<_>>::new(
@@ -43,7 +43,7 @@ fn bench_petgraph_preorder_forward_bfs_traversal_linked_list_bintree_20(criterio
 }
 
 fn bench_petgraph_preorder_forward_bfs_traversal_vec_deque_bintree_10(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 10).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, BfsQueueStrategy, VecDeque<_>>::new(
@@ -61,7 +61,7 @@ fn bench_petgraph_preorder_forward_bfs_traversal_vec_deque_bintree_10(criterion:
 }
 
 fn bench_petgraph_preorder_forward_bfs_traversal_vec_deque_bintree_20(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 20).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, BfsQueueStrategy, VecDeque<_>>::new(
@@ -79,7 +79,7 @@ fn bench_petgraph_preorder_forward_bfs_traversal_vec_deque_bintree_20(criterion:
 }
 
 fn bench_petgraph_preorder_forward_dfs_traversal_linked_list_bintree_10(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 10).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, DfsQueueStrategy, LinkedList<_>>::new(
@@ -97,7 +97,7 @@ fn bench_petgraph_preorder_forward_dfs_traversal_linked_list_bintree_10(criterio
 }
 
 fn bench_petgraph_preorder_forward_dfs_traversal_linked_list_bintree_20(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 20).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, DfsQueueStrategy, LinkedList<_>>::new(
@@ -115,7 +115,7 @@ fn bench_petgraph_preorder_forward_dfs_traversal_linked_list_bintree_20(criterio
 }
 
 fn bench_petgraph_preorder_forward_dfs_traversal_vec_deque_bintree_10(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 10).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, DfsQueueStrategy, VecDeque<_>>::new(
@@ -133,7 +133,7 @@ fn bench_petgraph_preorder_forward_dfs_traversal_vec_deque_bintree_10(criterion:
 }
 
 fn bench_petgraph_preorder_forward_dfs_traversal_vec_deque_bintree_20(criterion: &mut Criterion) {
-    let mut graph = petgraph_impl::new::<(), ()>();
+    let mut graph = PetGraph::<(), ()>::new();
     let root = create_binary_tree(&mut graph, 20).unwrap();
     let mut traversal =
         PreOrderTraversal::<_, ForwardNeighborStrategy, DfsQueueStrategy, VecDeque<_>>::new(

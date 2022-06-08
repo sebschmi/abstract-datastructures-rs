@@ -253,12 +253,12 @@ impl<
 #[cfg(test)]
 mod tests {
     use crate::dijkstra::DefaultDijkstra;
-    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::MutableGraphContainer;
 
     #[test]
     fn test_dijkstra_simple() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(());
         let n2 = graph.add_node(());
         let n3 = graph.add_node(());
@@ -288,7 +288,7 @@ mod tests {
 
     #[test]
     fn test_dijkstra_cycle() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(());
         let n2 = graph.add_node(());
         let n3 = graph.add_node(());

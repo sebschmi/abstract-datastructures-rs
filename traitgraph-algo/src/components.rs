@@ -301,7 +301,7 @@ mod tests {
         extract_subgraphs_from_node_mapping, is_strongly_connected, naively_compute_strong_bridges,
     };
     use std::fmt::Debug;
-    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::{GraphBase, ImmutableGraphContainer, MutableGraphContainer};
 
     fn debug_assert_node_data<Graph: ImmutableGraphContainer>(
@@ -338,7 +338,7 @@ mod tests {
 
     #[test]
     fn test_decompose_weakly_connected_components_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -385,7 +385,7 @@ mod tests {
 
     #[test]
     fn test_decompose_weakly_connected_components_one_wc_with_two_sccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -425,7 +425,7 @@ mod tests {
 
     #[test]
     fn test_decompose_weakly_connected_components_multiple_wccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -465,14 +465,14 @@ mod tests {
 
     #[test]
     fn test_decompose_weakly_connected_components_empty_graph() {
-        let graph = petgraph_impl::new::<i32, i32>();
+        let graph = PetGraph::<(), ()>::new();
         let result = decompose_weakly_connected_components(&graph);
         debug_assert_eq!(result.len(), 0);
     }
 
     #[test]
     fn test_decompose_weakly_connected_components_nearly_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -518,7 +518,7 @@ mod tests {
 
     #[test]
     fn test_decompose_weakly_connected_components_nearly_scc_reverse() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -564,7 +564,7 @@ mod tests {
 
     #[test]
     fn test_scc_check_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -587,7 +587,7 @@ mod tests {
 
     #[test]
     fn test_scc_check_one_wc_with_two_sccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -607,7 +607,7 @@ mod tests {
 
     #[test]
     fn test_scc_check_multiple_wccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -626,13 +626,13 @@ mod tests {
 
     #[test]
     fn test_scc_check_empty_graph() {
-        let graph = petgraph_impl::new::<i32, i32>();
+        let graph = PetGraph::<(), ()>::new();
         debug_assert!(is_strongly_connected(&graph));
     }
 
     #[test]
     fn test_scc_check_nearly_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -655,7 +655,7 @@ mod tests {
 
     #[test]
     fn test_scc_check_nearly_scc_reverse() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -680,7 +680,7 @@ mod tests {
 
     #[test]
     fn test_decompose_sccs_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -718,7 +718,7 @@ mod tests {
 
     #[test]
     fn test_decompose_sccs_one_wc_with_two_sccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -755,7 +755,7 @@ mod tests {
 
     #[test]
     fn test_decompose_sccs_multiple_wccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -796,7 +796,7 @@ mod tests {
 
     #[test]
     fn test_decompose_sccs_empty_graph() {
-        let graph = petgraph_impl::new::<i32, i32>();
+        let graph = PetGraph::<(), ()>::new();
         debug_assert!(is_strongly_connected(&graph));
         let node_map = decompose_strongly_connected_components(&graph);
         debug_assert_eq!(node_map, vec![]);
@@ -805,7 +805,7 @@ mod tests {
 
     #[test]
     fn test_decompose_sccs_nearly_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -845,7 +845,7 @@ mod tests {
 
     #[test]
     fn test_decompose_sccs_nearly_scc_reverse() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -887,7 +887,7 @@ mod tests {
 
     #[test]
     fn test_extract_subgraphs_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -918,7 +918,7 @@ mod tests {
 
     #[test]
     fn test_extract_subgraphs_one_wc_with_two_sccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -957,7 +957,7 @@ mod tests {
 
     #[test]
     fn test_extract_subgraphs_multiple_wccs() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -996,7 +996,7 @@ mod tests {
 
     #[test]
     fn test_extract_subgraphs_empty_graph() {
-        let graph = petgraph_impl::new::<i32, i32>();
+        let graph = PetGraph::<(), ()>::new();
         debug_assert!(is_strongly_connected(&graph));
         let extracted = extract_subgraphs_from_node_mapping(
             &graph,
@@ -1007,7 +1007,7 @@ mod tests {
 
     #[test]
     fn test_extract_subgraphs_nearly_scc() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -1048,7 +1048,7 @@ mod tests {
 
     #[test]
     fn test_extract_subgraphs_nearly_scc_reverse() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(0);
         let n1 = graph.add_node(1);
         let n2 = graph.add_node(2);
@@ -1092,7 +1092,7 @@ mod tests {
     #[test]
     fn test_compute_strong_bridges() {
         #![allow(clippy::many_single_char_names)]
-        let mut graph = petgraph_impl::new::<_, ()>();
+        let mut graph = PetGraph::new();
         let a = graph.add_node("a");
         let b = graph.add_node("b");
         let c = graph.add_node("c");
