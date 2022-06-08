@@ -109,6 +109,14 @@ pub trait MutableGraphContainer: ImmutableGraphContainer {
     /// Note that this may change the ids of existing nodes.
     fn remove_node(&mut self, node_id: Self::NodeIndex) -> Option<Self::NodeData>;
 
+    /// Removes all nodes with the given ids from the graph.
+    /// Note that this may change the ids of existing nodes.
+    fn remove_nodes(&mut self, node_ids: impl Iterator<Item = Self::NodeIndex>) {
+        for node_id in node_ids {
+            self.remove_node(node_id);
+        }
+    }
+
     /// Removes the edge with the given id from the graph.
     /// Note that this may change the ids of existing edges.
     fn remove_edge(&mut self, edge_id: Self::EdgeIndex) -> Option<Self::EdgeData>;
