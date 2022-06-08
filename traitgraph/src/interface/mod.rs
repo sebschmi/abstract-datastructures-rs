@@ -110,9 +110,15 @@ pub trait MutableGraphContainer: ImmutableGraphContainer {
     fn remove_node(&mut self, node_id: Self::NodeIndex) -> Option<Self::NodeData>;
 
     /// Removes all nodes with the given ids from the graph.
+    /// The nodes must be passed as a slice and sorted in ascending order.
     /// Note that this may change the ids of existing nodes.
-    fn remove_nodes(&mut self, node_ids: impl Iterator<Item = Self::NodeIndex>) {
-        for node_id in node_ids {
+    fn remove_nodes_sorted_slice(&mut self, node_ids: &[Self::NodeIndex]) {
+        let mut previous_node_id = None;
+        for node_id in node_ids.iter().copied().rev() {
+            if let Some(previous_node_id) = previous_node_id {
+                debug_assert!(previous_node_id > node_id);
+            }
+            previous_node_id = Some(node_id);
             self.remove_node(node_id);
         }
     }
