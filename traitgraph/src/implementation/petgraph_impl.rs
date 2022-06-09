@@ -11,7 +11,7 @@ use std::iter::Map;
 pub use petgraph;
 
 /// A wrapper around the [petgraph::graph::Graph] type replacing its methods with implementations of our traits.
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct PetGraph<NodeData, EdgeData>(DiGraph<NodeData, EdgeData, usize>);
 
 impl<NodeData, EdgeData> PetGraph<NodeData, EdgeData> {
@@ -221,3 +221,9 @@ impl<NodeData: PartialEq, EdgeData: PartialEq> PartialEq for PetGraph<NodeData, 
 }
 
 impl<NodeData: Eq, EdgeData: Eq> Eq for PetGraph<NodeData, EdgeData> {}
+
+impl<NodeData, EdgeData> Default for PetGraph<NodeData, EdgeData> {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
