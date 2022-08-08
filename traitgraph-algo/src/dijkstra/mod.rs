@@ -1,4 +1,5 @@
 use crate::dijkstra::epoch_array_dijkstra_node_weight_array::EpochNodeWeightArray;
+use crate::dijkstra::performance_counters::DijkstraPerformanceData;
 use std::collections::BinaryHeap;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -13,6 +14,9 @@ pub mod epoch_array_dijkstra_node_weight_array;
 /// Contains the implementation of the [NodeWeightArray] as [hashbrown::HashMap].
 #[cfg(feature = "hashbrown_dijkstra_node_weight_array")]
 pub mod hashbrown_dijkstra_node_weight_array;
+
+/// Performance counters for Dijkstra's algorithm.
+pub mod performance_counters;
 
 /// A Dijkstra implementation with a set of common optimisations.
 pub type DefaultDijkstra<Graph, WeightType> = Dijkstra<
@@ -171,65 +175,6 @@ pub enum DijkstraExhaustiveness {
     PartialHeap,
 }
 
-/// Performance data collected by Dijkstra's algorithm.
-/// This trait allows to collect the performance data optionally,
-/// by providing a type that either collects it, or ignores it.
-pub trait DijkstraPerformanceData {
-    /// Increment the number of iterations of the main loop of Dijkstra's algorithm.
-    fn add_iteration(&mut self);
-
-    /// Increment the number of heap elements that already have a lower weight than what was stored in the heap.
-    /// These are wasted cycles because our heap does not support the `decrease_key` operation.
-    fn add_unnecessary_heap_element(&mut self);
-
-    /// Get the number of iterations of the main loop of Dijkstra's algorithm.
-    fn iterations(&self) -> Option<u64>;
-
-    /// Get the number of unnecessary heap elements that were inserted during Dijkstra's algorithm.
-    fn unnecessary_heap_elements(&self) -> Option<u64>;
-}
-
-impl DijkstraPerformanceData for () {
-    fn add_iteration(&mut self) {}
-
-    fn add_unnecessary_heap_element(&mut self) {}
-
-    fn iterations(&self) -> Option<u64> {
-        None
-    }
-
-    fn unnecessary_heap_elements(&self) -> Option<u64> {
-        None
-    }
-}
-
-/// A simple performance counter for Dijkstra's algorithm, keeping all supported counts.
-#[derive(Default, Debug)]
-pub struct DijkstraPerformanceCounter {
-    /// The number of iterations of the main loop of Dijkstra's algorithm.
-    pub iterations: u64,
-    /// The number of unnecessary heap elements.
-    pub unnecessary_heap_elements: u64,
-}
-
-impl DijkstraPerformanceData for DijkstraPerformanceCounter {
-    fn add_iteration(&mut self) {
-        self.iterations += 1;
-    }
-
-    fn add_unnecessary_heap_element(&mut self) {
-        self.unnecessary_heap_elements += 1;
-    }
-
-    fn iterations(&self) -> Option<u64> {
-        Some(self.iterations)
-    }
-
-    fn unnecessary_heap_elements(&self) -> Option<u64> {
-        Some(self.unnecessary_heap_elements)
-    }
-}
-
 /// The final status of an execution of Dijkstra's algorithm.
 pub struct DijkstraStatus<DijkstraPerformance: DijkstraPerformanceData> {
     /// The exhaustiveness of the search.
@@ -366,6 +311,7 @@ impl<
 
 #[cfg(test)]
 mod tests {
+    use crate::dijkstra::performance_counters::NoopDijkstraPerformanceCounter;
     use crate::dijkstra::DefaultDijkstra;
     use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::MutableGraphContainer;
@@ -393,7 +339,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
-            (),
+            NoopDijkstraPerformanceCounter,
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
@@ -407,7 +353,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
-            (),
+            NoopDijkstraPerformanceCounter,
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
@@ -421,7 +367,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
-            (),
+            NoopDijkstraPerformanceCounter,
         );
         debug_assert_eq!(distances, vec![(n3, 2)]);
 
@@ -435,7 +381,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
-            (),
+            NoopDijkstraPerformanceCounter,
         );
         debug_assert_eq!(distances, vec![(n3, 0)]);
 
@@ -450,7 +396,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
-            (),
+            NoopDijkstraPerformanceCounter,
         );
         debug_assert_eq!(distances, vec![]);
     }
@@ -478,7 +424,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
-            (),
+            NoopDijkstraPerformanceCounter,
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
     }
