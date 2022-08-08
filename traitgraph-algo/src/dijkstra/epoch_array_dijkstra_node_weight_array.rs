@@ -111,4 +111,8 @@ impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType>
     fn clear(&mut self) {
         self.epochs.clear();
     }
+
+    fn size(&self) -> usize {
+        self.weights.size()
+    }
 }

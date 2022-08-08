@@ -46,4 +46,8 @@ impl<WeightType: DijkstraWeight + Clone> NodeWeightArray<WeightType>
     fn clear(&mut self) {
         self.clear()
     }
+
+    fn size(&self) -> usize {
+        self.capacity()
+    }
 }

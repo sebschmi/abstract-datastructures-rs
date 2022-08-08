@@ -63,6 +63,9 @@ pub trait NodeWeightArray<WeightType> {
 
     /// Resets the weights of all node indices to infinity
     fn clear(&mut self);
+
+    /// Returns the number of nodes whose weight is stored in the data structure.
+    fn size(&self) -> usize;
 }
 
 impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType> for Vec<WeightType> {
@@ -92,6 +95,11 @@ impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType> for Vec<Weig
         for entry in self.iter_mut() {
             *entry = WeightType::infinity();
         }
+    }
+
+    #[inline]
+    fn size(&self) -> usize {
+        self.len()
     }
 }
 
@@ -125,6 +133,9 @@ pub trait DijkstraHeap<WeightType, IndexType>: Default {
 
     /// Remove all entries from the heap.
     fn clear(&mut self);
+
+    /// Returns the number of nodes the heap currently has space for.
+    fn size(&mut self) -> usize;
 }
 
 impl<WeightType: Ord, IndexType: Ord> DijkstraHeap<WeightType, IndexType>
@@ -140,6 +151,10 @@ impl<WeightType: Ord, IndexType: Ord> DijkstraHeap<WeightType, IndexType>
 
     fn clear(&mut self) {
         self.clear()
+    }
+
+    fn size(&mut self) -> usize {
+        self.capacity()
     }
 }
 
@@ -158,6 +173,19 @@ pub struct Dijkstra<
     node_weights: NodeWeights,
     graph: PhantomData<Graph>,
     _weight_type_phantom: PhantomData<WeightType>,
+}
+
+/// The result of running Dijkstra's algorithm.
+/// This can be a complete search, or an early abort because of reaching performance limits.
+///
+/// Note that the `max_weight` parameter is not a performance limit, but a limit on the search space.
+pub enum DijkstraStatus {
+    /// The search exhausted the search space.
+    Complete,
+    /// The search was aborted early because the node weight data structure grew too large.
+    PartialNodeWeights,
+    /// The search was aborted early because the heap grew too large.
+    PartialHeap,
 }
 
 impl<
@@ -180,6 +208,8 @@ impl<
     }
 
     /// Compute the shortest paths from source to all targets, with given maximum weight.
+    ///
+    /// **max_node_weight_data_size:** the maximum number of nodes for which a weight can be stored before the search aborts.
     #[inline(never)]
     #[allow(clippy::too_many_arguments)]
     pub fn shortest_path_lens<TargetMap: DijkstraTargetMap<Graph>>(
@@ -191,12 +221,15 @@ impl<
         max_weight: WeightType,
         forbid_source_target: bool,
         distances: &mut Vec<(Graph::NodeIndex, WeightType)>,
-    ) {
+        max_node_weight_data_size: usize,
+        max_heap_data_size: usize,
+    ) -> DijkstraStatus {
         //println!("Shortest path lens of {}", source.as_usize());
         self.heap.insert(WeightType::zero(), source);
         //self.back_pointers[source.as_usize()] = source.into();
         self.node_weights.set(source.as_usize(), WeightType::zero());
         distances.clear();
+        let mut result = DijkstraStatus::Complete;
 
         //let mut iterations = 0;
         //let mut unnecessary_iterations = 0;
@@ -240,6 +273,14 @@ impl<
                     //self.back_pointers[out_neighbor.node_id.as_usize()] = node_index.into();
                 }
             }
+
+            if self.node_weights.size() > max_node_weight_data_size {
+                result = DijkstraStatus::PartialNodeWeights;
+                break;
+            } else if self.heap.size() > max_heap_data_size {
+                result = DijkstraStatus::PartialHeap;
+                break;
+            }
         }
 
         self.heap.clear();
@@ -247,6 +288,7 @@ impl<
             *back_pointer = Default::default();
         }*/
         self.node_weights.clear();
+        result
     }
 }
 
@@ -269,20 +311,70 @@ mod tests {
         let mut dijkstra = DefaultDijkstra::new(&graph);
         let mut distances = Vec::new();
         let mut targets = vec![false, false, true];
-        dijkstra.shortest_path_lens(&graph, n1, &targets, 1, 6, false, &mut distances);
+        dijkstra.shortest_path_lens(
+            &graph,
+            n1,
+            &targets,
+            1,
+            6,
+            false,
+            &mut distances,
+            usize::MAX,
+            usize::MAX,
+        );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
-        dijkstra.shortest_path_lens(&graph, n1, &targets, 1, 6, false, &mut distances);
+        dijkstra.shortest_path_lens(
+            &graph,
+            n1,
+            &targets,
+            1,
+            6,
+            false,
+            &mut distances,
+            usize::MAX,
+            usize::MAX,
+        );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
-        dijkstra.shortest_path_lens(&graph, n2, &targets, 1, 6, false, &mut distances);
+        dijkstra.shortest_path_lens(
+            &graph,
+            n2,
+            &targets,
+            1,
+            6,
+            false,
+            &mut distances,
+            usize::MAX,
+            usize::MAX,
+        );
         debug_assert_eq!(distances, vec![(n3, 2)]);
 
-        dijkstra.shortest_path_lens(&graph, n3, &targets, 1, 6, false, &mut distances);
+        dijkstra.shortest_path_lens(
+            &graph,
+            n3,
+            &targets,
+            1,
+            6,
+            false,
+            &mut distances,
+            usize::MAX,
+            usize::MAX,
+        );
         debug_assert_eq!(distances, vec![(n3, 0)]);
 
         targets = vec![false, true, false];
-        dijkstra.shortest_path_lens(&graph, n3, &targets, 1, 6, false, &mut distances);
+        dijkstra.shortest_path_lens(
+            &graph,
+            n3,
+            &targets,
+            1,
+            6,
+            false,
+            &mut distances,
+            usize::MAX,
+            usize::MAX,
+        );
         debug_assert_eq!(distances, vec![]);
     }
 
@@ -299,7 +391,17 @@ mod tests {
         let mut dijkstra = DefaultDijkstra::new(&graph);
         let mut distances = Vec::new();
         let targets = vec![false, false, true];
-        dijkstra.shortest_path_lens(&graph, n1, &targets, 1, 6, false, &mut distances);
+        dijkstra.shortest_path_lens(
+            &graph,
+            n1,
+            &targets,
+            1,
+            6,
+            false,
+            &mut distances,
+            usize::MAX,
+            usize::MAX,
+        );
         debug_assert_eq!(distances, vec![(n3, 4)]);
     }
 }
