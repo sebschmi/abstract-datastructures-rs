@@ -166,6 +166,7 @@ impl<WeightType: Ord, IndexType: Ord> DijkstraHeap<WeightType, IndexType>
 /// This can be complete, or partial because of reaching performance limits.
 ///
 /// Note that the `max_weight` parameter is not a performance limit, but a limit on the search space.
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DijkstraExhaustiveness {
     /// The search exhausted the search space.
     Complete,
@@ -176,6 +177,7 @@ pub enum DijkstraExhaustiveness {
 }
 
 /// The final status of an execution of Dijkstra's algorithm.
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct DijkstraStatus<DijkstraPerformance: DijkstraPerformanceData> {
     /// The exhaustiveness of the search.
     pub exhaustiveness: DijkstraExhaustiveness,

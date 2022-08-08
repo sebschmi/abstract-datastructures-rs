@@ -19,7 +19,7 @@ pub trait DijkstraPerformanceData {
 }
 
 /// A simple performance counter for Dijkstra's algorithm, keeping all supported counts.
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Eq, PartialEq)]
 pub struct DijkstraPerformanceCounter {
     /// The number of iterations of the main loop of Dijkstra's algorithm.
     pub iterations: u64,
@@ -28,7 +28,7 @@ pub struct DijkstraPerformanceCounter {
 }
 
 /// A performance counter for Dijkstra's algorithm that ignores all counts.
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, Eq, PartialEq)]
 pub struct NoopDijkstraPerformanceCounter;
 
 impl DijkstraPerformanceData for DijkstraPerformanceCounter {
