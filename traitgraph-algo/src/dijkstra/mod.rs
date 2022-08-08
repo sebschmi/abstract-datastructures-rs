@@ -158,6 +158,86 @@ impl<WeightType: Ord, IndexType: Ord> DijkstraHeap<WeightType, IndexType>
     }
 }
 
+/// The exhaustiveness of an execution of Dijkstra's algorithm.
+/// This can be complete, or partial because of reaching performance limits.
+///
+/// Note that the `max_weight` parameter is not a performance limit, but a limit on the search space.
+pub enum DijkstraExhaustiveness {
+    /// The search exhausted the search space.
+    Complete,
+    /// The search was aborted early because the node weight data structure grew too large.
+    PartialNodeWeights,
+    /// The search was aborted early because the heap grew too large.
+    PartialHeap,
+}
+
+/// Performance data collected by Dijkstra's algorithm.
+/// This trait allows to collect the performance data optionally,
+/// by providing a type that either collects it, or ignores it.
+pub trait DijkstraPerformanceData {
+    /// Increment the number of iterations of the main loop of Dijkstra's algorithm.
+    fn add_iteration(&mut self);
+
+    /// Increment the number of heap elements that already have a lower weight than what was stored in the heap.
+    /// These are wasted cycles because our heap does not support the `decrease_key` operation.
+    fn add_unnecessary_heap_element(&mut self);
+
+    /// Get the number of iterations of the main loop of Dijkstra's algorithm.
+    fn iterations(&self) -> Option<u64>;
+
+    /// Get the number of unnecessary heap elements that were inserted during Dijkstra's algorithm.
+    fn unnecessary_heap_elements(&self) -> Option<u64>;
+}
+
+impl DijkstraPerformanceData for () {
+    fn add_iteration(&mut self) {}
+
+    fn add_unnecessary_heap_element(&mut self) {}
+
+    fn iterations(&self) -> Option<u64> {
+        None
+    }
+
+    fn unnecessary_heap_elements(&self) -> Option<u64> {
+        None
+    }
+}
+
+/// A simple performance counter for Dijkstra's algorithm, keeping all supported counts.
+#[derive(Default, Debug)]
+pub struct DijkstraPerformanceCounter {
+    /// The number of iterations of the main loop of Dijkstra's algorithm.
+    pub iterations: u64,
+    /// The number of unnecessary heap elements.
+    pub unnecessary_heap_elements: u64,
+}
+
+impl DijkstraPerformanceData for DijkstraPerformanceCounter {
+    fn add_iteration(&mut self) {
+        self.iterations += 1;
+    }
+
+    fn add_unnecessary_heap_element(&mut self) {
+        self.unnecessary_heap_elements += 1;
+    }
+
+    fn iterations(&self) -> Option<u64> {
+        Some(self.iterations)
+    }
+
+    fn unnecessary_heap_elements(&self) -> Option<u64> {
+        Some(self.unnecessary_heap_elements)
+    }
+}
+
+/// The final status of an execution of Dijkstra's algorithm.
+pub struct DijkstraStatus<DijkstraPerformance: DijkstraPerformanceData> {
+    /// The exhaustiveness of the search.
+    pub exhaustiveness: DijkstraExhaustiveness,
+    /// The performance data collected during execution.
+    pub performance_data: DijkstraPerformance,
+}
+
 /// Data structure for Dijkstra's shortest path algorithm.
 ///
 /// This variant of Dijkstra's algorithm supports only computing the length of a shortest path, and not the shortest path itself.
@@ -173,19 +253,6 @@ pub struct Dijkstra<
     node_weights: NodeWeights,
     graph: PhantomData<Graph>,
     _weight_type_phantom: PhantomData<WeightType>,
-}
-
-/// The result of running Dijkstra's algorithm.
-/// This can be a complete search, or an early abort because of reaching performance limits.
-///
-/// Note that the `max_weight` parameter is not a performance limit, but a limit on the search space.
-pub enum DijkstraStatus {
-    /// The search exhausted the search space.
-    Complete,
-    /// The search was aborted early because the node weight data structure grew too large.
-    PartialNodeWeights,
-    /// The search was aborted early because the heap grew too large.
-    PartialHeap,
 }
 
 impl<
@@ -212,7 +279,10 @@ impl<
     /// **max_node_weight_data_size:** the maximum number of nodes for which a weight can be stored before the search aborts.
     #[inline(never)]
     #[allow(clippy::too_many_arguments)]
-    pub fn shortest_path_lens<TargetMap: DijkstraTargetMap<Graph>>(
+    pub fn shortest_path_lens<
+        TargetMap: DijkstraTargetMap<Graph>,
+        DijkstraPerformance: DijkstraPerformanceData + Default,
+    >(
         &mut self,
         graph: &Graph,
         source: Graph::NodeIndex,
@@ -223,24 +293,23 @@ impl<
         distances: &mut Vec<(Graph::NodeIndex, WeightType)>,
         max_node_weight_data_size: usize,
         max_heap_data_size: usize,
-    ) -> DijkstraStatus {
+    ) -> DijkstraStatus<DijkstraPerformance> {
         //println!("Shortest path lens of {}", source.as_usize());
         self.heap.insert(WeightType::zero(), source);
         //self.back_pointers[source.as_usize()] = source.into();
         self.node_weights.set(source.as_usize(), WeightType::zero());
         distances.clear();
-        let mut result = DijkstraStatus::Complete;
+        let mut exhaustiveness = DijkstraExhaustiveness::Complete;
+        let mut performance_data = DijkstraPerformance::default();
 
-        //let mut iterations = 0;
-        //let mut unnecessary_iterations = 0;
         //let max_iterations = self.graph.node_count();
         while let Some((weight, node_index)) = self.heap.remove_min() {
-            //iterations += 1;
+            performance_data.add_iteration();
             //println!("Finalising node {}", node_index.as_usize());
             // Check if the node was already processed
             let actual_weight = self.node_weights.get(node_index.as_usize());
             if actual_weight < weight {
-                //unnecessary_iterations += 1;
+                performance_data.add_unnecessary_heap_element();
                 continue;
             }
             debug_assert_eq!(actual_weight, weight);
@@ -275,10 +344,10 @@ impl<
             }
 
             if self.node_weights.size() > max_node_weight_data_size {
-                result = DijkstraStatus::PartialNodeWeights;
+                exhaustiveness = DijkstraExhaustiveness::PartialNodeWeights;
                 break;
             } else if self.heap.size() > max_heap_data_size {
-                result = DijkstraStatus::PartialHeap;
+                exhaustiveness = DijkstraExhaustiveness::PartialHeap;
                 break;
             }
         }
@@ -288,7 +357,10 @@ impl<
             *back_pointer = Default::default();
         }*/
         self.node_weights.clear();
-        result
+        DijkstraStatus {
+            exhaustiveness,
+            performance_data,
+        }
     }
 }
 
@@ -311,7 +383,7 @@ mod tests {
         let mut dijkstra = DefaultDijkstra::new(&graph);
         let mut distances = Vec::new();
         let mut targets = vec![false, false, true];
-        dijkstra.shortest_path_lens(
+        dijkstra.shortest_path_lens::<_, ()>(
             &graph,
             n1,
             &targets,
@@ -324,7 +396,7 @@ mod tests {
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
-        dijkstra.shortest_path_lens(
+        dijkstra.shortest_path_lens::<_, ()>(
             &graph,
             n1,
             &targets,
@@ -337,7 +409,7 @@ mod tests {
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
-        dijkstra.shortest_path_lens(
+        dijkstra.shortest_path_lens::<_, ()>(
             &graph,
             n2,
             &targets,
@@ -350,7 +422,7 @@ mod tests {
         );
         debug_assert_eq!(distances, vec![(n3, 2)]);
 
-        dijkstra.shortest_path_lens(
+        dijkstra.shortest_path_lens::<_, ()>(
             &graph,
             n3,
             &targets,
@@ -364,7 +436,7 @@ mod tests {
         debug_assert_eq!(distances, vec![(n3, 0)]);
 
         targets = vec![false, true, false];
-        dijkstra.shortest_path_lens(
+        dijkstra.shortest_path_lens::<_, ()>(
             &graph,
             n3,
             &targets,
@@ -391,7 +463,7 @@ mod tests {
         let mut dijkstra = DefaultDijkstra::new(&graph);
         let mut distances = Vec::new();
         let targets = vec![false, false, true];
-        dijkstra.shortest_path_lens(
+        dijkstra.shortest_path_lens::<_, ()>(
             &graph,
             n1,
             &targets,
