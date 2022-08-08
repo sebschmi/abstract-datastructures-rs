@@ -281,7 +281,7 @@ impl<
     #[allow(clippy::too_many_arguments)]
     pub fn shortest_path_lens<
         TargetMap: DijkstraTargetMap<Graph>,
-        DijkstraPerformance: DijkstraPerformanceData + Default,
+        DijkstraPerformance: DijkstraPerformanceData,
     >(
         &mut self,
         graph: &Graph,
@@ -293,6 +293,7 @@ impl<
         distances: &mut Vec<(Graph::NodeIndex, WeightType)>,
         max_node_weight_data_size: usize,
         max_heap_data_size: usize,
+        mut performance_data: DijkstraPerformance,
     ) -> DijkstraStatus<DijkstraPerformance> {
         //println!("Shortest path lens of {}", source.as_usize());
         self.heap.insert(WeightType::zero(), source);
@@ -300,7 +301,6 @@ impl<
         self.node_weights.set(source.as_usize(), WeightType::zero());
         distances.clear();
         let mut exhaustiveness = DijkstraExhaustiveness::Complete;
-        let mut performance_data = DijkstraPerformance::default();
 
         //let max_iterations = self.graph.node_count();
         while let Some((weight, node_index)) = self.heap.remove_min() {
@@ -383,7 +383,7 @@ mod tests {
         let mut dijkstra = DefaultDijkstra::new(&graph);
         let mut distances = Vec::new();
         let mut targets = vec![false, false, true];
-        dijkstra.shortest_path_lens::<_, ()>(
+        dijkstra.shortest_path_lens(
             &graph,
             n1,
             &targets,
@@ -393,10 +393,11 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
+            (),
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
-        dijkstra.shortest_path_lens::<_, ()>(
+        dijkstra.shortest_path_lens(
             &graph,
             n1,
             &targets,
@@ -406,10 +407,11 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
+            (),
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
 
-        dijkstra.shortest_path_lens::<_, ()>(
+        dijkstra.shortest_path_lens(
             &graph,
             n2,
             &targets,
@@ -419,10 +421,11 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
+            (),
         );
         debug_assert_eq!(distances, vec![(n3, 2)]);
 
-        dijkstra.shortest_path_lens::<_, ()>(
+        dijkstra.shortest_path_lens(
             &graph,
             n3,
             &targets,
@@ -432,11 +435,12 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
+            (),
         );
         debug_assert_eq!(distances, vec![(n3, 0)]);
 
         targets = vec![false, true, false];
-        dijkstra.shortest_path_lens::<_, ()>(
+        dijkstra.shortest_path_lens(
             &graph,
             n3,
             &targets,
@@ -446,6 +450,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
+            (),
         );
         debug_assert_eq!(distances, vec![]);
     }
@@ -463,7 +468,7 @@ mod tests {
         let mut dijkstra = DefaultDijkstra::new(&graph);
         let mut distances = Vec::new();
         let targets = vec![false, false, true];
-        dijkstra.shortest_path_lens::<_, ()>(
+        dijkstra.shortest_path_lens(
             &graph,
             n1,
             &targets,
@@ -473,6 +478,7 @@ mod tests {
             &mut distances,
             usize::MAX,
             usize::MAX,
+            (),
         );
         debug_assert_eq!(distances, vec![(n3, 4)]);
     }
