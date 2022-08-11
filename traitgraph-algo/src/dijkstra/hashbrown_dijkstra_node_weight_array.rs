@@ -48,6 +48,6 @@ impl<WeightType: DijkstraWeight + Clone> NodeWeightArray<WeightType>
     }
 
     fn size(&self) -> usize {
-        self.capacity()
+        self.len()
     }
 }

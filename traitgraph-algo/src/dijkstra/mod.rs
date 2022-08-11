@@ -158,7 +158,7 @@ impl<WeightType: Ord, IndexType: Ord> DijkstraHeap<WeightType, IndexType>
     }
 
     fn size(&mut self) -> usize {
-        self.capacity()
+        self.len()
     }
 }
 
