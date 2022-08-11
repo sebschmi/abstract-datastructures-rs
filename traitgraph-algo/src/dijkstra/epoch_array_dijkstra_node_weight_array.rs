@@ -29,30 +29,37 @@ impl EpochArray {
         }
     }
 
-    /// Set the given index as current.
+    /// Set the given index as current and returns true if the given index was current before, and false otherwise
     ///
     /// Safety: Undefined behaviour if the index is out of bounds of the epoch array.
     #[inline]
-    pub fn update(&mut self, index: usize) {
+    pub fn update(&mut self, index: usize) -> bool {
         unsafe {
+            let result = *self.epochs.get_unchecked(index) == self.current_epoch;
             *self.epochs.get_unchecked_mut(index) = self.current_epoch;
+            result
         }
         //self.epochs[index] = self.current_epoch;
     }
 
     /// Returns true if the given index is current, and false otherwise.
+    ///
+    /// Safety: Undefined behaviour if the index is out of bounds of the epoch array.
     #[inline]
     pub fn get(&self, index: usize) -> bool {
-        self.epochs[index] == self.current_epoch
+        unsafe { *self.epochs.get_unchecked(index) == self.current_epoch }
     }
 
     /// Updates the given index and returns true if the given index was current before, and false otherwise.
+    ///
+    /// Safety: Undefined behaviour if the index is out of bounds of the epoch array.
     #[inline]
     pub fn get_and_update(&mut self, index: usize) -> bool {
-        if self.epochs[index] == self.current_epoch {
+        let epoch = unsafe { self.epochs.get_unchecked_mut(index) };
+        if *epoch == self.current_epoch {
             true
         } else {
-            self.epochs[index] = self.current_epoch;
+            *epoch = self.current_epoch;
             false
         }
     }
@@ -63,6 +70,7 @@ impl EpochArray {
 pub struct EpochNodeWeightArray<WeightType> {
     weights: Vec<WeightType>,
     epochs: EpochArray,
+    size: usize,
 }
 
 impl<WeightType: DijkstraWeight> EpochNodeWeightArray<WeightType> {
@@ -70,6 +78,7 @@ impl<WeightType: DijkstraWeight> EpochNodeWeightArray<WeightType> {
     fn make_current(&mut self, node_index: usize) {
         if !self.epochs.get_and_update(node_index) {
             self.weights[node_index] = WeightType::infinity();
+            self.size += 1;
         }
     }
 }
@@ -81,6 +90,7 @@ impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType>
         Self {
             weights: vec![WeightType::infinity(); len],
             epochs: EpochArray::new(len),
+            size: 0,
         }
     }
 
@@ -105,14 +115,17 @@ impl<WeightType: DijkstraWeight + Copy> NodeWeightArray<WeightType>
     #[inline]
     fn set(&mut self, node_index: usize, weight: WeightType) {
         self.weights[node_index] = weight;
-        self.epochs.update(node_index);
+        if !self.epochs.update(node_index) {
+            self.size += 1;
+        }
     }
 
     fn clear(&mut self) {
         self.epochs.clear();
+        self.size = 0;
     }
 
     fn size(&self) -> usize {
-        self.weights.size()
+        self.size
     }
 }
