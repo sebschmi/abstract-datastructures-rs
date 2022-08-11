@@ -290,6 +290,9 @@ impl<
                 }
             }
 
+            performance_data.record_heap_size(self.heap.size());
+            performance_data.record_distance_array_size(self.node_weights.size());
+
             if self.node_weights.size() > max_node_weight_data_size {
                 exhaustiveness = DijkstraExhaustiveness::PartialNodeWeights;
                 break;
@@ -304,6 +307,7 @@ impl<
             *back_pointer = Default::default();
         }*/
         self.node_weights.clear();
+        performance_data.finish_dijkstra();
         DijkstraStatus {
             exhaustiveness,
             performance_data,
