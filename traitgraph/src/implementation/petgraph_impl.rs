@@ -139,23 +139,23 @@ type PetgraphRestrictedNeighborTranslator<'a, EdgeData, EdgeIndex> = Map<
     fn(petgraph::graph::EdgeReference<'a, EdgeData, usize>) -> EdgeIndex,
 >;
 
-impl<'a, NodeData, EdgeData: 'a> NavigableGraph<'a> for PetGraph<NodeData, EdgeData> {
-    type OutNeighbors = PetgraphNeighborTranslator<
+impl<NodeData, EdgeData> NavigableGraph for PetGraph<NodeData, EdgeData> {
+    type OutNeighbors<'a> = PetgraphNeighborTranslator<
         'a,
         EdgeData,
         <Self as GraphBase>::NodeIndex,
         <Self as GraphBase>::EdgeIndex,
-    >;
-    type InNeighbors = PetgraphNeighborTranslator<
+    > where NodeData: 'a, EdgeData: 'a;
+    type InNeighbors<'a> = PetgraphNeighborTranslator<
         'a,
         EdgeData,
         <Self as GraphBase>::NodeIndex,
         <Self as GraphBase>::EdgeIndex,
-    >;
-    type EdgesBetween =
-        PetgraphRestrictedNeighborTranslator<'a, EdgeData, <Self as GraphBase>::EdgeIndex>;
+    > where NodeData: 'a, EdgeData: 'a;
+    type EdgesBetween<'a> =
+        PetgraphRestrictedNeighborTranslator<'a, EdgeData, <Self as GraphBase>::EdgeIndex> where NodeData: 'a, EdgeData: 'a;
 
-    fn out_neighbors(&'a self, node_id: <Self as GraphBase>::NodeIndex) -> Self::OutNeighbors {
+    fn out_neighbors(&self, node_id: <Self as GraphBase>::NodeIndex) -> Self::OutNeighbors<'_> {
         debug_assert!(self.contains_node_index(node_id));
         self.0
             .edges_directed(node_id.into(), Direction::Outgoing)
@@ -165,7 +165,7 @@ impl<'a, NodeData, EdgeData: 'a> NavigableGraph<'a> for PetGraph<NodeData, EdgeD
             })
     }
 
-    fn in_neighbors(&'a self, node_id: <Self as GraphBase>::NodeIndex) -> Self::InNeighbors {
+    fn in_neighbors(&self, node_id: <Self as GraphBase>::NodeIndex) -> Self::InNeighbors<'_> {
         debug_assert!(self.contains_node_index(node_id));
         self.0
             .edges_directed(node_id.into(), Direction::Incoming)
@@ -176,10 +176,10 @@ impl<'a, NodeData, EdgeData: 'a> NavigableGraph<'a> for PetGraph<NodeData, EdgeD
     }
 
     fn edges_between(
-        &'a self,
+        &self,
         from_node_id: <Self as GraphBase>::NodeIndex,
         to_node_id: <Self as GraphBase>::NodeIndex,
-    ) -> Self::EdgesBetween {
+    ) -> Self::EdgesBetween<'_> {
         debug_assert!(self.contains_node_index(from_node_id));
         debug_assert!(self.contains_node_index(to_node_id));
         self.0

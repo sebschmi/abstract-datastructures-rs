@@ -138,63 +138,69 @@ pub trait MutableGraphContainer: ImmutableGraphContainer {
 }
 
 /// A graph that can be navigated, i.e. that can iterate the neighbors of its nodes.
-pub trait NavigableGraph<'a>: ImmutableGraphContainer + Sized {
+pub trait NavigableGraph: ImmutableGraphContainer + Sized {
     /// The iterator type used to iterate over the outgoing neighbors of a node.
-    type OutNeighbors: Iterator<Item = Neighbor<Self::NodeIndex, Self::EdgeIndex>>;
+    type OutNeighbors<'a>: Iterator<Item = Neighbor<Self::NodeIndex, Self::EdgeIndex>>
+    where
+        Self: 'a;
     /// The iterator type used to iterate over the incoming neighbors of a node.
-    type InNeighbors: Iterator<Item = Neighbor<Self::NodeIndex, Self::EdgeIndex>>;
+    type InNeighbors<'a>: Iterator<Item = Neighbor<Self::NodeIndex, Self::EdgeIndex>>
+    where
+        Self: 'a;
     /// The iterator type used to iterate over the edges between to nodes.
-    type EdgesBetween: Iterator<Item = Self::EdgeIndex>;
+    type EdgesBetween<'a>: Iterator<Item = Self::EdgeIndex>
+    where
+        Self: 'a;
 
     /// Returns an iterator over the outgoing neighbors of the given node.
-    fn out_neighbors(&'a self, node_id: Self::NodeIndex) -> Self::OutNeighbors;
+    fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_>;
     /// Returns an iterator over the incoming neighbors of the given node.
-    fn in_neighbors(&'a self, node_id: Self::NodeIndex) -> Self::InNeighbors;
+    fn in_neighbors(&self, node_id: Self::NodeIndex) -> Self::InNeighbors<'_>;
 
     /// Returns an iterator over the edges `(from_node_id, to_node_id)`.
     fn edges_between(
-        &'a self,
+        &self,
         from_node_id: Self::NodeIndex,
         to_node_id: Self::NodeIndex,
-    ) -> Self::EdgesBetween;
+    ) -> Self::EdgesBetween<'_>;
 
     /// Returns the amount of outgoing edges from a node.
-    fn out_degree(&'a self, node_id: Self::NodeIndex) -> usize {
+    fn out_degree(&self, node_id: Self::NodeIndex) -> usize {
         self.out_neighbors(node_id).count()
     }
 
     /// Returns the amount of incoming edges to a node.
-    fn in_degree(&'a self, node_id: Self::NodeIndex) -> usize {
+    fn in_degree(&self, node_id: Self::NodeIndex) -> usize {
         self.in_neighbors(node_id).count()
     }
 
     /// Returns true if the given node has indegree == 1 and outdegree == 1.
-    fn is_biunivocal_node(&'a self, node_id: Self::NodeIndex) -> bool {
+    fn is_biunivocal_node(&self, node_id: Self::NodeIndex) -> bool {
         self.in_degree(node_id) == 1 && self.out_degree(node_id) == 1
     }
 
     /// Returns true if the given node has indegree > 1 and outdegree > 1.
-    fn is_bivalent_node(&'a self, node_id: Self::NodeIndex) -> bool {
+    fn is_bivalent_node(&self, node_id: Self::NodeIndex) -> bool {
         self.in_degree(node_id) > 1 && self.out_degree(node_id) > 1
     }
 
     /// Returns true if the given edge's tail has outdegree > 1.
-    fn is_split_edge(&'a self, edge_id: Self::EdgeIndex) -> bool {
+    fn is_split_edge(&self, edge_id: Self::EdgeIndex) -> bool {
         self.out_degree(self.edge_endpoints(edge_id).from_node) > 1
     }
 
     /// Returns true if the given edge's head has indegree > 1.
-    fn is_join_edge(&'a self, edge_id: Self::EdgeIndex) -> bool {
+    fn is_join_edge(&self, edge_id: Self::EdgeIndex) -> bool {
         self.in_degree(self.edge_endpoints(edge_id).to_node) > 1
     }
 
     /// Returns true if the given node has outdegree > 1.
-    fn is_split_node(&'a self, node_id: Self::NodeIndex) -> bool {
+    fn is_split_node(&self, node_id: Self::NodeIndex) -> bool {
         self.out_degree(node_id) > 1
     }
 
     /// Returns true if the given node has indegree > 1.
-    fn is_join_node(&'a self, node_id: Self::NodeIndex) -> bool {
+    fn is_join_node(&self, node_id: Self::NodeIndex) -> bool {
         self.in_degree(node_id) > 1
     }
 }
@@ -248,11 +254,8 @@ impl<Graph: GraphBase> WalkableGraph for Graph {}
 
 /// A graph implementing all common graph traits that do not require mutable access.
 /// This is a useful shortcut for generic type bounds when the graph should not be mutated.
-pub trait StaticGraph:
-    ImmutableGraphContainer + for<'a> NavigableGraph<'a> + WalkableGraph
-{
-}
-impl<T: ImmutableGraphContainer + for<'a> NavigableGraph<'a> + WalkableGraph> StaticGraph for T {}
+pub trait StaticGraph: ImmutableGraphContainer + NavigableGraph + WalkableGraph {}
+impl<T: ImmutableGraphContainer + NavigableGraph + WalkableGraph> StaticGraph for T {}
 
 /// A graph implementing all common graph traits, including those requiring mutable access.
 /// This is a useful shortcut for generic type bounds when the graph should be mutated.

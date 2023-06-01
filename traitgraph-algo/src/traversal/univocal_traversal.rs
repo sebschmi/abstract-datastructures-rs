@@ -15,11 +15,8 @@ pub struct UnivocalIterator<'a, Graph: GraphBase, NeighborStrategy> {
     current_edge: Option<Graph::EdgeIndex>,
 }
 
-impl<
-        'a,
-        Graph: NavigableGraph<'a>,
-        NeighborStrategy: 'a + TraversalNeighborStrategy<'a, Graph>,
-    > UnivocalIterator<'a, Graph, NeighborStrategy>
+impl<'a, Graph: NavigableGraph, NeighborStrategy: 'a + TraversalNeighborStrategy<Graph>>
+    UnivocalIterator<'a, Graph, NeighborStrategy>
 {
     /// Create a new `UnivocalIterator` that iterates over the univocal extension of `start_element` including `start_element`, in the direction specified by `neighbor_strategy`.
     pub fn new(
@@ -47,9 +44,9 @@ impl<
     }
 }
 
-impl<'a, Graph: NavigableGraph<'a>> UnivocalIterator<'a, Graph, ForwardNeighborStrategy>
+impl<'a, Graph: NavigableGraph> UnivocalIterator<'a, Graph, ForwardNeighborStrategy>
 where
-    ForwardNeighborStrategy: TraversalNeighborStrategy<'a, Graph>,
+    ForwardNeighborStrategy: TraversalNeighborStrategy<Graph>,
 {
     /// Create a new `UnivocalIterator` that iterates over the forward univocal extension of `start_element` including `start_element`.
     pub fn new_forward(
@@ -68,9 +65,9 @@ where
     }
 }
 
-impl<'a, Graph: NavigableGraph<'a>> UnivocalIterator<'a, Graph, BackwardNeighborStrategy>
+impl<'a, Graph: NavigableGraph> UnivocalIterator<'a, Graph, BackwardNeighborStrategy>
 where
-    BackwardNeighborStrategy: TraversalNeighborStrategy<'a, Graph>,
+    BackwardNeighborStrategy: TraversalNeighborStrategy<Graph>,
 {
     /// Create a new `UnivocalIterator` that iterates over the backward univocal extension of `start_element` including `start_element`.
     pub fn new_backward(
@@ -89,7 +86,7 @@ where
     }
 }
 
-impl<'a, Graph: NavigableGraph<'a>, NeighborStrategy: TraversalNeighborStrategy<'a, Graph>> Iterator
+impl<'a, Graph: NavigableGraph, NeighborStrategy: TraversalNeighborStrategy<Graph>> Iterator
     for UnivocalIterator<'a, Graph, NeighborStrategy>
 {
     type Item = NodeOrEdge<Graph::NodeIndex, Graph::EdgeIndex>;
