@@ -92,7 +92,7 @@ pub type PostOrderUndirectedDfs<Graph> = DfsPostOrderTraversal<
 pub struct PreOrderTraversal<
     'a,
     Graph: GraphBase,
-    NeighborStrategy: TraversalNeighborStrategy<'a, Graph>,
+    NeighborStrategy: 'a + TraversalNeighborStrategy<Graph>,
     QueueStrategy,
     Queue: BidirectedQueue<Graph::NodeIndex>,
 > {
@@ -100,7 +100,7 @@ pub struct PreOrderTraversal<
     queue: Queue,
     rank: Vec<Graph::OptionalNodeIndex>,
     current_rank: Graph::NodeIndex,
-    neighbor_iterator: Option<NeighborStrategy::Iterator>,
+    neighbor_iterator: Option<NeighborStrategy::Iterator<'a>>,
     neighbor_strategy: PhantomData<NeighborStrategy>,
     queue_strategy: PhantomData<QueueStrategy>,
 }
@@ -108,7 +108,7 @@ pub struct PreOrderTraversal<
 impl<
         'a,
         Graph: StaticGraph,
-        NeighborStrategy: TraversalNeighborStrategy<'a, Graph>,
+        NeighborStrategy: TraversalNeighborStrategy<Graph>,
         QueueStrategy: TraversalQueueStrategy<Graph, Queue>,
         Queue: BidirectedQueue<Graph::NodeIndex>,
     > PreOrderTraversal<'a, Graph, NeighborStrategy, QueueStrategy, Queue>
@@ -226,7 +226,7 @@ impl<
 impl<
         'a,
         Graph: StaticGraph,
-        NeighborStrategy: TraversalNeighborStrategy<'a, Graph>,
+        NeighborStrategy: TraversalNeighborStrategy<Graph>,
         QueueStrategy: TraversalQueueStrategy<Graph, Queue>,
         Queue: BidirectedQueue<Graph::NodeIndex>,
     > Iterator for PreOrderTraversal<'a, Graph, NeighborStrategy, QueueStrategy, Queue>
@@ -260,7 +260,7 @@ pub struct DfsPostOrderTraversal<
 impl<
         'a,
         Graph: StaticGraph,
-        NeighborStrategy: TraversalNeighborStrategy<'a, Graph>,
+        NeighborStrategy: TraversalNeighborStrategy<Graph>,
         Queue: BidirectedQueue<Graph::NodeIndex>,
     > DfsPostOrderTraversal<Graph, NeighborStrategy, Queue>
 {
@@ -355,20 +355,26 @@ pub trait ForbiddenSubgraph<Graph: GraphBase> {
 }
 
 /// A type that defines the strategy for computing the neighborhood of a node or edge, i.e. forward, backward or undirected.
-pub trait TraversalNeighborStrategy<'a, Graph: GraphBase> {
+pub trait TraversalNeighborStrategy<Graph: GraphBase> {
     /// The iterator type used to iterate over the neighbors of a node.
-    type Iterator: Iterator<Item = Neighbor<Graph::NodeIndex, Graph::EdgeIndex>>;
+    type Iterator<'a>: Iterator<Item = Neighbor<Graph::NodeIndex, Graph::EdgeIndex>>
+    where
+        Self: 'a,
+        Graph: 'a;
     /// The iterator type used to iterate over the neighbors of an edge.
-    type EdgeNeighborIterator: Iterator<Item = Graph::NodeIndex>;
+    type EdgeNeighborIterator<'a>: Iterator<Item = Graph::NodeIndex>
+    where
+        Self: 'a,
+        Graph: 'a;
 
     /// Returns an iterator over the neighbors of a given node.
-    fn neighbor_iterator(graph: &'a Graph, node: Graph::NodeIndex) -> Self::Iterator;
+    fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_>;
 
     /// Returns an iterator over the neighbors of an edge.
     fn edge_neighbor_iterator(
-        graph: &'a Graph,
+        graph: &Graph,
         edge: Graph::EdgeIndex,
-    ) -> Self::EdgeNeighborIterator;
+    ) -> Self::EdgeNeighborIterator<'_>;
 }
 
 /// A type that defines the order of node processing in a traversal, i.e. queue-based or stack-based.
@@ -462,20 +468,20 @@ pub struct ForwardNeighborStrategy;
     fn(crate::interface::Neighbor<NodeIndex, EdgeIndex>) -> NodeIndex,
 >;*/
 
-impl<'a, Graph: NavigableGraph<'a> + ImmutableGraphContainer> TraversalNeighborStrategy<'a, Graph>
+impl<Graph: NavigableGraph + ImmutableGraphContainer> TraversalNeighborStrategy<Graph>
     for ForwardNeighborStrategy
 {
-    type Iterator = Graph::OutNeighbors;
-    type EdgeNeighborIterator = std::iter::Once<Graph::NodeIndex>;
+    type Iterator<'a> = Graph::OutNeighbors<'a> where Self: 'a, Graph: 'a;
+    type EdgeNeighborIterator<'a> = std::iter::Once<Graph::NodeIndex> where Graph: 'a;
 
-    fn neighbor_iterator(graph: &'a Graph, node: Graph::NodeIndex) -> Self::Iterator {
+    fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_> {
         graph.out_neighbors(node)
     }
 
     fn edge_neighbor_iterator(
-        graph: &'a Graph,
+        graph: &Graph,
         edge: Graph::EdgeIndex,
-    ) -> Self::EdgeNeighborIterator {
+    ) -> Self::EdgeNeighborIterator<'_> {
         std::iter::once(graph.edge_endpoints(edge).to_node)
     }
 }
@@ -483,20 +489,20 @@ impl<'a, Graph: NavigableGraph<'a> + ImmutableGraphContainer> TraversalNeighborS
 /// A neighbor strategy that traverses all incoming edges of a node.
 pub struct BackwardNeighborStrategy;
 
-impl<'a, Graph: NavigableGraph<'a> + ImmutableGraphContainer> TraversalNeighborStrategy<'a, Graph>
+impl<Graph: NavigableGraph + ImmutableGraphContainer> TraversalNeighborStrategy<Graph>
     for BackwardNeighborStrategy
 {
-    type Iterator = Graph::InNeighbors;
-    type EdgeNeighborIterator = std::iter::Once<Graph::NodeIndex>;
+    type Iterator<'a> = Graph::InNeighbors<'a> where Self: 'a, Graph: 'a;
+    type EdgeNeighborIterator<'a> = std::iter::Once<Graph::NodeIndex> where Graph: 'a;
 
-    fn neighbor_iterator(graph: &'a Graph, node: Graph::NodeIndex) -> Self::Iterator {
+    fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_> {
         graph.in_neighbors(node)
     }
 
     fn edge_neighbor_iterator(
-        graph: &'a Graph,
+        graph: &Graph,
         edge: Graph::EdgeIndex,
-    ) -> Self::EdgeNeighborIterator {
+    ) -> Self::EdgeNeighborIterator<'_> {
         std::iter::once(graph.edge_endpoints(edge).from_node)
     }
 }
@@ -508,21 +514,21 @@ type InOutNeighborsChain<OutNeighbors, InNeighbors> = std::iter::Chain<
     <InNeighbors as IntoIterator>::IntoIter,
 >;
 
-impl<'a, Graph: NavigableGraph<'a> + ImmutableGraphContainer> TraversalNeighborStrategy<'a, Graph>
+impl<Graph: NavigableGraph + ImmutableGraphContainer> TraversalNeighborStrategy<Graph>
     for UndirectedNeighborStrategy
 {
-    type Iterator = InOutNeighborsChain<Graph::OutNeighbors, Graph::InNeighbors>;
-    type EdgeNeighborIterator =
-        std::iter::Chain<std::iter::Once<Graph::NodeIndex>, std::iter::Once<Graph::NodeIndex>>;
+    type Iterator<'a> = InOutNeighborsChain<Graph::OutNeighbors<'a>, Graph::InNeighbors<'a>> where Self: 'a, Graph: 'a;
+    type EdgeNeighborIterator<'a> =
+        std::iter::Chain<std::iter::Once<Graph::NodeIndex>, std::iter::Once<Graph::NodeIndex>> where Graph: 'a;
 
-    fn neighbor_iterator(graph: &'a Graph, node: Graph::NodeIndex) -> Self::Iterator {
+    fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_> {
         graph.out_neighbors(node).chain(graph.in_neighbors(node))
     }
 
     fn edge_neighbor_iterator(
-        graph: &'a Graph,
+        graph: &Graph,
         edge: Graph::EdgeIndex,
-    ) -> Self::EdgeNeighborIterator {
+    ) -> Self::EdgeNeighborIterator<'_> {
         std::iter::once(graph.edge_endpoints(edge).to_node)
             .chain(std::iter::once(graph.edge_endpoints(edge).from_node))
     }

@@ -65,7 +65,7 @@ impl<T: DecoratingSubgraph> GraphBase for T {
 
 impl<T: DecoratingSubgraph> ImmutableGraphContainer for T
 where
-    T::ParentGraph: ImmutableGraphContainer + for<'a> NavigableGraph<'a>,
+    T::ParentGraph: ImmutableGraphContainer + NavigableGraph,
 {
     fn node_indices(&self) -> GraphIndices<Self::NodeIndex, Self::OptionalNodeIndex> {
         unimplemented!("Will not implement if not necessary");
@@ -123,45 +123,45 @@ where
     }
 }
 
-impl<'a, T: 'a + DecoratingSubgraph> NavigableGraph<'a> for T
+impl<T: DecoratingSubgraph> NavigableGraph for T
 where
-    T::ParentGraph: ImmutableGraphContainer + for<'b> NavigableGraph<'b>,
+    T::ParentGraph: ImmutableGraphContainer + NavigableGraph,
 {
     //type OutNeighbors = <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph<'a>>::OutNeighbors;//std::iter::Filter<<<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph<'a>>::OutNeighbors, fn(&Neighbor<<Self as GraphBase>::NodeIndex,<Self as GraphBase>::EdgeIndex>)->bool>;
-    type OutNeighbors = EdgeFilteredNeighborIterator<
+    type OutNeighbors<'a> = EdgeFilteredNeighborIterator<
         'a,
         T,
-        <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph<'a>>::OutNeighbors,
-    >;
-    type InNeighbors = EdgeFilteredNeighborIterator<
+        <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph>::OutNeighbors<'a>,
+    > where T: 'a;
+    type InNeighbors<'a> = EdgeFilteredNeighborIterator<
         'a,
         T,
-        <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph<'a>>::InNeighbors,
-    >;
-    type EdgesBetween = EdgeFilteredEdgeIterator<
+        <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph>::InNeighbors<'a>,
+    > where T: 'a;
+    type EdgesBetween<'a> = EdgeFilteredEdgeIterator<
         'a,
         T,
-        <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph<'a>>::EdgesBetween,
-    >;
+        <<Self as DecoratingSubgraph>::ParentGraph as NavigableGraph>::EdgesBetween<'a>,
+    > where T: 'a;
 
-    fn out_neighbors(&'a self, node_id: Self::NodeIndex) -> Self::OutNeighbors {
+    fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_> {
         EdgeFilteredNeighborIterator {
             graph: self,
             iter: self.parent_graph().out_neighbors(node_id),
         }
     }
 
-    fn in_neighbors(&'a self, node_id: Self::NodeIndex) -> Self::InNeighbors {
+    fn in_neighbors(&self, node_id: Self::NodeIndex) -> Self::InNeighbors<'_> {
         EdgeFilteredNeighborIterator {
             graph: self,
             iter: self.parent_graph().in_neighbors(node_id),
         }
     }
     fn edges_between(
-        &'a self,
+        &self,
         from_node_id: Self::NodeIndex,
         to_node_id: Self::NodeIndex,
-    ) -> Self::EdgesBetween {
+    ) -> Self::EdgesBetween<'_> {
         EdgeFilteredEdgeIterator {
             graph: self,
             iter: self.parent_graph().edges_between(from_node_id, to_node_id),
@@ -186,7 +186,8 @@ impl<
     type Item = Neighbor<<Graph as GraphBase>::NodeIndex, <Graph as GraphBase>::EdgeIndex>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.find(|neighbor| self.graph.contains_edge(neighbor.edge_id))
+        self.iter
+            .find(|neighbor| self.graph.contains_edge(neighbor.edge_id))
     }
 }
 
