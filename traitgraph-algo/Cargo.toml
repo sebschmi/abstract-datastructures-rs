@@ -19,7 +19,7 @@ rust-version = "1.56.1"
 hashbrown_dijkstra_node_weight_array = ["hashbrown"]
 
 [dependencies]
-traitgraph = {version = "2.0.0", path = "../traitgraph"}
+traitgraph = {version = "3.0.0", path = "../traitgraph"}
 rand = "0.8.4"
 hashbrown = {version = "0.13.2", optional = true}
 
