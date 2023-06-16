@@ -226,6 +226,59 @@ pub fn decompose_strongly_connected_components<Graph: StaticGraph>(
     result
 }
 
+/// Returns the strongly connected components of a graph whose indices are non-consecutive.
+///
+/// If the graph is empty, no SCCs are returned.
+/// Otherwise, an array is returned that maps each node to a root node representing its SCC.
+pub fn decompose_strongly_connected_components_non_consecutive<Graph: StaticGraph>(
+    graph: &Graph,
+) -> Vec<Graph::OptionalNodeIndex> {
+    if graph.node_count() == 0 {
+        return Vec::new();
+    }
+
+    let mut result =
+        vec![Graph::OptionalNodeIndex::new_none(); graph.node_indices().max().unwrap().as_usize()];
+    let mut nodes = LinkedList::new();
+    let mut visited = vec![false; result.len()];
+    // 0 will be overridden with the first reset.
+    let mut dfs = PostOrderForwardDfs::new_without_start(graph);
+
+    for node in graph.node_indices() {
+        if !visited[node.as_usize()] {
+            dfs.continue_traversal_from(node);
+
+            while let Some(node) = dfs.next(graph) {
+                visited[node.as_usize()] = true;
+                nodes.push_front(node);
+            }
+        }
+    }
+
+    //println!("nodes: {:?}", nodes);
+
+    let mut bfs = PreOrderBackwardBfs::new_without_start(graph);
+    for root_node in nodes {
+        if visited[root_node.as_usize()] {
+            //println!("Reverse processing {:?}", root_node);
+            bfs.continue_traversal_from(root_node);
+
+            for node in &mut bfs {
+                let node = if let NodeOrEdge::Node(node) = node {
+                    node
+                } else {
+                    continue;
+                };
+                visited[node.as_usize()] = false;
+                result[node.as_usize()] = Some(root_node).into();
+            }
+        }
+    }
+
+    //println!("result: {:?}", result);
+    result
+}
+
 /// Extract the subgraphs of the given graph according to the given node_mapping.
 ///
 /// The node indices of the graph are assumed to match the indices of the vector given as node mapping.
