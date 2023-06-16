@@ -7,7 +7,7 @@
 //!
 //! As it happens, the access types match well to common graph use cases, i.e. queries for nodes and edges, adding and removing nodes and edges as well as iterating over the neighbors of a node.
 
-use crate::index::{GraphIndex, GraphIndices, OptionalGraphIndex};
+use crate::index::{GraphIndex, OptionalGraphIndex};
 use crate::walks::{EdgeWalk, NodeWalk};
 use std::iter::FromIterator;
 
@@ -45,11 +45,20 @@ pub trait GraphBase {
 ///
 /// Graphs that implement this trait must have their nodes and edges indexed consecutively.
 pub trait ImmutableGraphContainer: GraphBase {
+    /// The iterator type used to iterate over the outgoing neighbors of a node.
+    type NodeIndices<'a>: Iterator<Item = Self::NodeIndex>
+    where
+        Self: 'a;
+    /// The iterator type used to iterate over the incoming neighbors of a node.
+    type EdgeIndices<'a>: Iterator<Item = Self::EdgeIndex>
+    where
+        Self: 'a;
+
     /// Returns an iterator over the node indices in this graph.
-    fn node_indices(&self) -> GraphIndices<Self::NodeIndex, Self::OptionalNodeIndex>;
+    fn node_indices(&self) -> Self::NodeIndices<'_>;
 
     /// Returns an iterator over the edge indices in this graph.
-    fn edge_indices(&self) -> GraphIndices<Self::EdgeIndex, Self::OptionalEdgeIndex>;
+    fn edge_indices(&self) -> Self::EdgeIndices<'_>;
 
     /// Returns true if this graph contains the given node index.
     fn contains_node_index(&self, node_id: Self::NodeIndex) -> bool;
@@ -75,12 +84,6 @@ pub trait ImmutableGraphContainer: GraphBase {
     /// Returns a mutable reference to the edge data associated with the given edge id, or None if there is no such edge.
     fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData;
 
-    /// Returns true if the graph contains an edge `(from, to)`.
-    fn contains_edge_between(&self, from: Self::NodeIndex, to: Self::NodeIndex) -> bool;
-
-    /// Returns the amount of edges `(from, to)`.
-    fn edge_count_between(&self, from: Self::NodeIndex, to: Self::NodeIndex) -> usize;
-
     /// Returns the endpoints of an edge.
     fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex>;
 
@@ -92,8 +95,34 @@ pub trait ImmutableGraphContainer: GraphBase {
     }
 }
 
+/// Passes a mutable graph through another type.
+/// Useful for accessing a graph mutably while iterating over its nodes or edges.
+pub trait MutableGraphPassthrough<Graph: ?Sized> {
+    /// Get a mutable reference to the graph.
+    fn graph_mut(&mut self) -> &mut Graph;
+}
+
 /// A container that allows adding and removing nodes and edges.
 pub trait MutableGraphContainer: ImmutableGraphContainer {
+    /// The iterator type used to iterate over the outgoing neighbors of a node,
+    /// while handing out mutable references to the underlying graph.
+    type NodeIndicesMut<'a>: Iterator<Item = Self::NodeIndex> + MutableGraphPassthrough<Self>
+    where
+        Self: 'a;
+    /// The iterator type used to iterate over the incoming neighbors of a node.
+    /// while handing out mutable references to the underlying graph.
+    type EdgeIndicesMut<'a>: Iterator<Item = Self::EdgeIndex> + MutableGraphPassthrough<Self>
+    where
+        Self: 'a;
+
+    /// Returns an iterator over the node indices in this graph.
+    /// The iterator also hands out a mutable reference to this graph in every iteration.
+    fn node_indices_mut(&mut self) -> Self::NodeIndicesMut<'_>;
+
+    /// Returns an iterator over the edge indices in this graph.
+    /// The iterator also hands out a mutable reference to this graph in every iteration.
+    fn edge_indices_mut(&mut self) -> Self::EdgeIndicesMut<'_>;
+
     /// Adds a new node with the given `NodeData` to the graph.
     fn add_node(&mut self, node_data: Self::NodeData) -> Self::NodeIndex;
 
@@ -137,6 +166,60 @@ pub trait MutableGraphContainer: ImmutableGraphContainer {
     fn clear(&mut self);
 }
 
+/// A type that represents a subgraph of another graph.
+pub trait SubgraphBase: GraphBase {
+    /// The root graph of this subgraph, which is either its parent or the root of a DAG of subgraphs.
+    type RootGraph: GraphBase<
+        NodeData = Self::NodeData,
+        EdgeData = Self::EdgeData,
+        NodeIndex = Self::NodeIndex,
+        EdgeIndex = Self::EdgeIndex,
+        OptionalNodeIndex = Self::OptionalNodeIndex,
+        OptionalEdgeIndex = Self::OptionalEdgeIndex,
+    >;
+
+    /// Returns a reference to the root graph of this subgraph.
+    fn root(&self) -> &Self::RootGraph;
+}
+
+/// A type that represents a mutable subgraph, to which nodes and edges existing in the parent graph can be added,
+/// and nodes and edges can be removed.
+pub trait MutableSubgraph: SubgraphBase {
+    /// Removes all nodes and edges from the subgraph.
+    fn clear(&mut self);
+
+    /// Adds all nodes and edges from the parent graph to this subgraph.
+    fn fill(&mut self);
+
+    /// Enables the given node index that exists in the root graph in this subgraph.
+    /// This method should only be called for nodes that are enabled in the parent of this subgraph.
+    fn enable_node(
+        &mut self,
+        node_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::NodeIndex,
+    );
+
+    /// Enables the given edge index that exists in the root graph in this subgraph.
+    /// This method should only be called for edges that are enabled in the parent of this subgraph.
+    fn enable_edge(
+        &mut self,
+        edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
+    );
+
+    /// Disables the given node index that exists in the root graph in this subgraph.
+    /// This method should only be called for nodes that are enabled in the parent of this subgraph.
+    fn disable_node(
+        &mut self,
+        node_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::NodeIndex,
+    );
+
+    /// Disables the given edge index that exists in the root graph in this subgraph.
+    /// This method should only be called for edges that are enabled in the parent of this subgraph.
+    fn disable_edge(
+        &mut self,
+        edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
+    );
+}
+
 /// A graph that can be navigated, i.e. that can iterate the neighbors of its nodes.
 pub trait NavigableGraph: ImmutableGraphContainer + Sized {
     /// The iterator type used to iterate over the outgoing neighbors of a node.
@@ -147,7 +230,7 @@ pub trait NavigableGraph: ImmutableGraphContainer + Sized {
     type InNeighbors<'a>: Iterator<Item = Neighbor<Self::NodeIndex, Self::EdgeIndex>>
     where
         Self: 'a;
-    /// The iterator type used to iterate over the edges between to nodes.
+    /// The iterator type used to iterate over the edges between two nodes.
     type EdgesBetween<'a>: Iterator<Item = Self::EdgeIndex>
     where
         Self: 'a;
@@ -163,6 +246,16 @@ pub trait NavigableGraph: ImmutableGraphContainer + Sized {
         from_node_id: Self::NodeIndex,
         to_node_id: Self::NodeIndex,
     ) -> Self::EdgesBetween<'_>;
+
+    /// Returns true if the graph contains an edge `(from, to)`.
+    fn contains_edge_between(&self, from: Self::NodeIndex, to: Self::NodeIndex) -> bool {
+        self.edges_between(from, to).next().is_some()
+    }
+
+    /// Returns the amount of edges `(from, to)`.
+    fn edge_count_between(&self, from: Self::NodeIndex, to: Self::NodeIndex) -> usize {
+        self.edges_between(from, to).count()
+    }
 
     /// Returns the amount of outgoing edges from a node.
     fn out_degree(&self, node_id: Self::NodeIndex) -> usize {

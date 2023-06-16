@@ -18,5 +18,5 @@ rust-version = "1.65.0"
 [dependencies]
 petgraph = "0.6.2"
 num-traits = "0.2.14"
-bitvector = "0.1.5"
+bitvec = "1.0.1"
 traitsequence = {version = "1.1.0", path = "../traitsequence"}

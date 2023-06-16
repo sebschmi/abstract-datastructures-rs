@@ -4,3 +4,5 @@ pub mod bit_vector_subgraph;
 pub mod incremental_subgraph;
 /// A graph implementation based on the `petgraph` crate.
 pub mod petgraph_impl;
+/// Inverting subgraphs and computing the union or cut set of subgraphs.
+pub mod subgraph_operators;

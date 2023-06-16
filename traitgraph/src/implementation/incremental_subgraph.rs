@@ -1,6 +1,5 @@
 use crate::index::GraphIndex;
-use crate::interface::subgraph::DecoratingSubgraph;
-use crate::interface::{GraphBase, ImmutableGraphContainer};
+use crate::interface::{GraphBase, ImmutableGraphContainer, SubgraphBase};
 
 type IntegerType = usize;
 
@@ -17,12 +16,28 @@ pub struct IncrementalSubgraph<'a, Graph: GraphBase> {
     current_step: IntegerType,
 }
 
+impl<'a, Graph: GraphBase> GraphBase for IncrementalSubgraph<'a, Graph> {
+    type NodeData = Graph::NodeData;
+    type EdgeData = Graph::EdgeData;
+    type OptionalNodeIndex = Graph::OptionalNodeIndex;
+    type OptionalEdgeIndex = Graph::OptionalEdgeIndex;
+    type NodeIndex = Graph::NodeIndex;
+    type EdgeIndex = Graph::EdgeIndex;
+}
+
+impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
+    for IncrementalSubgraph<'a, Graph>
+{
+    type RootGraph = Graph::RootGraph;
+
+    fn root(&self) -> &Self::RootGraph {
+        self.parent_graph.root()
+    }
+}
+
 impl<'a, Graph: ImmutableGraphContainer> IncrementalSubgraph<'a, Graph> {
     /// Create an incremental subgraph with the given amount of incremental steps.
-    pub fn new_with_incremental_steps(
-        graph: <Self as DecoratingSubgraph>::ParentGraphRef,
-        incremental_steps: usize,
-    ) -> Self {
+    pub fn new_with_incremental_steps(graph: &'a Graph, incremental_steps: usize) -> Self {
         Self {
             parent_graph: graph,
             present_nodes: vec![IntegerType::max_value(); graph.node_count()],
@@ -76,7 +91,7 @@ impl<'a, Graph: ImmutableGraphContainer> IncrementalSubgraph<'a, Graph> {
     }
 }
 
-impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgraph<'a, Graph> {
+/*impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgraph<'a, Graph> {
     type ParentGraph = Graph;
     type ParentGraphRef = &'a Graph;
 
@@ -100,10 +115,10 @@ impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgr
 
     fn clear(&mut self) {
         for node in &mut self.present_nodes {
-            *node = IntegerType::max_value();
+            *node = IntegerType::MAX;
         }
         for edge in &mut self.present_edges {
-            *edge = IntegerType::max_value();
+            *edge = IntegerType::MAX;
         }
         for nodes in &mut self.new_nodes {
             nodes.clear();
@@ -111,6 +126,23 @@ impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgr
         for edges in &mut self.new_edges {
             edges.clear();
         }
+    }
+
+    fn fill(&mut self) {
+        for node in &mut self.present_nodes {
+            *node = 0;
+        }
+        for edge in &mut self.present_edges {
+            *edge = 0;
+        }
+        for nodes in &mut self.new_nodes {
+            nodes.clear();
+        }
+        self.new_nodes[0] = self.parent_graph.node_indices().collect();
+        for edges in &mut self.new_edges {
+            edges.clear();
+        }
+        self.new_edges[0] = self.parent_graph.edge_indices().collect();
     }
 
     fn parent_graph(&self) -> &Self::ParentGraph {
@@ -186,4 +218,4 @@ impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgr
             .filter(|&&n| n <= self.current_step)
             .count()
     }
-}
+}*/

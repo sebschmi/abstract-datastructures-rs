@@ -1,4 +1,4 @@
-use crate::interface::{
+/*use crate::interface::{
     Edge, GraphBase, GraphIndices, ImmutableGraphContainer, NavigableGraph, Neighbor,
 };
 use std::borrow::Borrow;
@@ -21,6 +21,9 @@ pub trait DecoratingSubgraph {
 
     /// Removes all nodes and edges from the subgraph.
     fn clear(&mut self);
+
+    /// Adds all nodes and edges to the subgraph.
+    fn fill(&mut self);
 
     /// Returns a reference to the original graph.
     fn parent_graph(&self) -> &Self::ParentGraph;
@@ -209,3 +212,4 @@ impl<
         self.iter.find(|&edge| self.graph.contains_edge(edge))
     }
 }
+*/
