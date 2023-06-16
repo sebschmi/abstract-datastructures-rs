@@ -16,15 +16,15 @@ rust-version = "1.65.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-hashbrown_dijkstra_node_weight_array = ["hashbrown"]
+hashbrown_dijkstra_node_weight_array = []
 
 [dependencies]
 traitgraph = {version = "3.0.0", path = "../traitgraph"}
 rand = "0.8.4"
-hashbrown = {version = "0.13.2", optional = true}
+hashbrown = {version = "0.14.0"}
 
 [dev-dependencies]
-criterion = "0.4.0"
+criterion = "0.5.1"
 
 [[bench]]
 name = "benches"
