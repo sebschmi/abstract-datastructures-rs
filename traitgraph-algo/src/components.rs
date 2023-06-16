@@ -2,6 +2,7 @@ use super::traversal::{
     PostOrderForwardDfs, PreOrderBackwardBfs, PreOrderForwardBfs, PreOrderUndirectedBfs,
 };
 use crate::traversal::ForbiddenEdge;
+use hashbrown::{HashMap, HashSet};
 use std::collections::LinkedList;
 use traitgraph::index::GraphIndex;
 use traitgraph::index::OptionalGraphIndex;
@@ -232,24 +233,23 @@ pub fn decompose_strongly_connected_components<Graph: StaticGraph>(
 /// Otherwise, an array is returned that maps each node to a root node representing its SCC.
 pub fn decompose_strongly_connected_components_non_consecutive<Graph: StaticGraph>(
     graph: &Graph,
-) -> Vec<Graph::OptionalNodeIndex> {
+) -> HashMap<Graph::NodeIndex, Graph::NodeIndex> {
     if graph.node_count() == 0 {
-        return Vec::new();
+        return HashMap::new();
     }
 
-    let mut result =
-        vec![Graph::OptionalNodeIndex::new_none(); graph.node_indices().max().unwrap().as_usize()];
+    let mut result = HashMap::with_capacity(graph.node_count());
     let mut nodes = LinkedList::new();
-    let mut visited = vec![false; result.len()];
+    let mut visited = HashSet::new();
     // 0 will be overridden with the first reset.
     let mut dfs = PostOrderForwardDfs::new_without_start(graph);
 
     for node in graph.node_indices() {
-        if !visited[node.as_usize()] {
+        if !visited.contains(&node) {
             dfs.continue_traversal_from(node);
 
             while let Some(node) = dfs.next(graph) {
-                visited[node.as_usize()] = true;
+                visited.insert(node);
                 nodes.push_front(node);
             }
         }
@@ -259,7 +259,7 @@ pub fn decompose_strongly_connected_components_non_consecutive<Graph: StaticGrap
 
     let mut bfs = PreOrderBackwardBfs::new_without_start(graph);
     for root_node in nodes {
-        if visited[root_node.as_usize()] {
+        if visited.contains(&root_node) {
             //println!("Reverse processing {:?}", root_node);
             bfs.continue_traversal_from(root_node);
 
@@ -269,8 +269,8 @@ pub fn decompose_strongly_connected_components_non_consecutive<Graph: StaticGrap
                 } else {
                     continue;
                 };
-                visited[node.as_usize()] = false;
-                result[node.as_usize()] = Some(root_node).into();
+                visited.remove(&node);
+                result.insert(node, root_node);
             }
         }
     }
