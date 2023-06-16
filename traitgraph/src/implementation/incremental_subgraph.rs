@@ -50,6 +50,30 @@ impl<'a, Graph: ImmutableGraphContainer> IncrementalSubgraph<'a, Graph> {
         debug_assert!(self.current_step < self.new_edges.len());
         &self.new_edges[self.current_step]
     }
+
+    /// Returns true if this node was added in the current step.
+    pub fn is_new_node(&self, node_index: <Self as GraphBase>::NodeIndex) -> bool {
+        debug_assert!(node_index.as_usize() < self.present_nodes.capacity());
+        self.present_nodes[node_index.as_usize()] == self.current_step
+    }
+
+    /// Returns true if this edge was added in the current step.
+    pub fn is_new_edge(&self, edge_index: <Self as GraphBase>::EdgeIndex) -> bool {
+        debug_assert!(edge_index.as_usize() < self.present_edges.capacity());
+        self.present_edges[edge_index.as_usize()] == self.current_step
+    }
+
+    /// Returns true if this node was removed in the current reverse step.
+    pub fn is_newly_removed_node(&self, node_index: <Self as GraphBase>::NodeIndex) -> bool {
+        debug_assert!(node_index.as_usize() < self.present_nodes.capacity());
+        self.present_nodes[node_index.as_usize()] == self.current_step + 1
+    }
+
+    /// Returns true if this edge was removed in the current reverse step.
+    pub fn is_newly_removed_edge(&self, edge_index: <Self as GraphBase>::EdgeIndex) -> bool {
+        debug_assert!(edge_index.as_usize() < self.present_edges.capacity());
+        self.present_edges[edge_index.as_usize()] == self.current_step + 1
+    }
 }
 
 impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgraph<'a, Graph> {
