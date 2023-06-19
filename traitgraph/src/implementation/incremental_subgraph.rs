@@ -1,5 +1,6 @@
 use crate::index::GraphIndex;
-use crate::interface::{GraphBase, ImmutableGraphContainer, SubgraphBase};
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, SubgraphBase};
+use std::iter::Filter;
 
 type IntegerType = usize;
 
@@ -16,7 +17,7 @@ pub struct IncrementalSubgraph<'a, Graph: GraphBase> {
     current_step: IntegerType,
 }
 
-impl<'a, Graph: GraphBase> GraphBase for IncrementalSubgraph<'a, Graph> {
+impl<Graph: GraphBase> GraphBase for IncrementalSubgraph<'_, Graph> {
     type NodeData = Graph::NodeData;
     type EdgeData = Graph::EdgeData;
     type OptionalNodeIndex = Graph::OptionalNodeIndex;
@@ -25,9 +26,7 @@ impl<'a, Graph: GraphBase> GraphBase for IncrementalSubgraph<'a, Graph> {
     type EdgeIndex = Graph::EdgeIndex;
 }
 
-impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
-    for IncrementalSubgraph<'a, Graph>
-{
+impl<Graph: SubgraphBase> SubgraphBase for IncrementalSubgraph<'_, Graph> {
     type RootGraph = Graph::RootGraph;
 
     fn root(&self) -> &Self::RootGraph {
@@ -40,8 +39,8 @@ impl<'a, Graph: ImmutableGraphContainer> IncrementalSubgraph<'a, Graph> {
     pub fn new_with_incremental_steps(graph: &'a Graph, incremental_steps: usize) -> Self {
         Self {
             parent_graph: graph,
-            present_nodes: vec![IntegerType::max_value(); graph.node_count()],
-            present_edges: vec![IntegerType::max_value(); graph.edge_count()],
+            present_nodes: vec![IntegerType::MAX; graph.node_count()],
+            present_edges: vec![IntegerType::MAX; graph.edge_count()],
             new_nodes: vec![Default::default(); incremental_steps],
             new_edges: vec![Default::default(); incremental_steps],
             current_step: 0,
@@ -91,131 +90,52 @@ impl<'a, Graph: ImmutableGraphContainer> IncrementalSubgraph<'a, Graph> {
     }
 }
 
-/*impl<'a, Graph: ImmutableGraphContainer> DecoratingSubgraph for IncrementalSubgraph<'a, Graph> {
-    type ParentGraph = Graph;
-    type ParentGraphRef = &'a Graph;
+impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for IncrementalSubgraph<'_, Graph> {
+    type NodeIndices<'a> = Filter<Graph::NodeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::NodeIndex) -> bool>> where Self: 'a;
+    type EdgeIndices<'a> = Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::EdgeIndex) -> bool>> where Self: 'a;
 
-    /// Not implemented for this type.
-    fn new_empty(_graph: Self::ParentGraphRef) -> Self {
-        /*Self {
-            parent_graph: graph,
-            present_nodes: vec![0; graph.node_count()],
-            present_edges: vec![0; graph.edge_count()],
-            new_nodes: Default::default(),
-            new_edges: Default::default(),
-            current_index: 0,
-        }*/
-        unimplemented!()
-    }
-
-    /// Not implemented for this type.
-    fn new_full(_graph: Self::ParentGraphRef) -> Self {
-        unimplemented!()
-    }
-
-    fn clear(&mut self) {
-        for node in &mut self.present_nodes {
-            *node = IntegerType::MAX;
-        }
-        for edge in &mut self.present_edges {
-            *edge = IntegerType::MAX;
-        }
-        for nodes in &mut self.new_nodes {
-            nodes.clear();
-        }
-        for edges in &mut self.new_edges {
-            edges.clear();
-        }
-    }
-
-    fn fill(&mut self) {
-        for node in &mut self.present_nodes {
-            *node = 0;
-        }
-        for edge in &mut self.present_edges {
-            *edge = 0;
-        }
-        for nodes in &mut self.new_nodes {
-            nodes.clear();
-        }
-        self.new_nodes[0] = self.parent_graph.node_indices().collect();
-        for edges in &mut self.new_edges {
-            edges.clear();
-        }
-        self.new_edges[0] = self.parent_graph.edge_indices().collect();
-    }
-
-    fn parent_graph(&self) -> &Self::ParentGraph {
+    fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.parent_graph
+            .node_indices()
+            .filter(Box::new(|n| self.contains_node_index(*n)))
     }
 
-    fn contains_node(&self, node_index: <Self::ParentGraph as GraphBase>::NodeIndex) -> bool {
-        debug_assert!(node_index.as_usize() < self.present_nodes.capacity());
-        self.present_nodes[node_index.as_usize()] <= self.current_step
+    fn edge_indices(&self) -> Self::EdgeIndices<'_> {
+        self.parent_graph
+            .edge_indices()
+            .filter(Box::new(|e| self.contains_edge_index(*e)))
     }
 
-    fn contains_edge(&self, edge_index: <Self::ParentGraph as GraphBase>::EdgeIndex) -> bool {
-        debug_assert!(edge_index.as_usize() < self.present_edges.capacity());
-        self.present_edges[edge_index.as_usize()] <= self.current_step
+    fn contains_node_index(&self, node_id: Self::NodeIndex) -> bool {
+        debug_assert!(node_id.as_usize() < self.present_nodes.len());
+        self.present_nodes[node_id.as_usize()] <= self.current_step
     }
 
-    /// Panics if the node_index is not valid for the graph passed in the constructor.
-    /// Panics also if the node was added already.
-    fn add_node(&mut self, node_index: <Self::ParentGraph as GraphBase>::NodeIndex) {
-        debug_assert!(node_index.as_usize() < self.present_nodes.capacity());
-        if self.present_nodes[node_index.as_usize()] > self.current_step {
-            debug_assert_eq!(
-                self.present_nodes[node_index.as_usize()],
-                IntegerType::max_value()
-            );
-            self.present_nodes[node_index.as_usize()] = self.current_step;
-            self.new_nodes[self.current_step].push(node_index);
-        }
+    fn contains_edge_index(&self, edge_id: Self::EdgeIndex) -> bool {
+        debug_assert!(edge_id.as_usize() < self.present_edges.len());
+        self.present_edges[edge_id.as_usize()] <= self.current_step
     }
 
-    /// Panics if the edge_index is not valid for the graph passed in the constructor.
-    /// Panics also if the edge was added already.
-    fn add_edge(&mut self, edge_index: <Self::ParentGraph as GraphBase>::EdgeIndex) {
-        debug_assert!(edge_index.as_usize() < self.present_edges.capacity());
-        if self.present_edges[edge_index.as_usize()] > self.current_step {
-            debug_assert_eq!(
-                self.present_edges[edge_index.as_usize()],
-                IntegerType::max_value()
-            );
-            self.present_edges[edge_index.as_usize()] = self.current_step;
-            self.new_edges[self.current_step].push(edge_index);
-        }
-    }
-
-    /// Panics if the node_index is not valid for the graph passed in the constructor.
-    fn remove_node(&mut self, node_index: <Self::ParentGraph as GraphBase>::NodeIndex) {
-        debug_assert!(node_index.as_usize() < self.present_nodes.capacity());
-        self.present_nodes[node_index.as_usize()] =
-            self.present_nodes[node_index.as_usize()].max(self.current_step + 1);
-        unimplemented!("This method is not intended to be called on an incremental subgraph.");
-    }
-
-    /// Panics if the edge_index is not valid for the graph passed in the constructor.
-    fn remove_edge(&mut self, edge_index: <Self::ParentGraph as GraphBase>::EdgeIndex) {
-        debug_assert!(edge_index.as_usize() < self.present_edges.capacity());
-        self.present_edges[edge_index.as_usize()] =
-            self.present_edges[edge_index.as_usize()].max(self.current_step + 1);
-        unimplemented!("This method is not intended to be called on an incremental subgraph.");
-    }
-
-    /// Returns the amount of nodes in the subgraph.
     fn node_count(&self) -> usize {
-        self.present_nodes
-            .iter()
-            .filter(|&&n| n <= self.current_step)
-            .count()
+        self.node_indices().count()
     }
 
-    /// Returns the amount of edges in the subgraph.
     fn edge_count(&self) -> usize {
-        self.present_edges
-            .iter()
-            .filter(|&&n| n <= self.current_step)
-            .count()
+        self.edge_indices().count()
     }
-}*/
+
+    fn node_data(&self, node_id: Self::NodeIndex) -> &Self::NodeData {
+        debug_assert!(self.contains_node_index(node_id));
+        self.parent_graph.node_data(node_id)
+    }
+
+    fn edge_data(&self, edge_id: Self::EdgeIndex) -> &Self::EdgeData {
+        debug_assert!(self.contains_edge_index(edge_id));
+        self.parent_graph.edge_data(edge_id)
+    }
+
+    fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex> {
+        debug_assert!(self.contains_edge_index(edge_id));
+        self.parent_graph.edge_endpoints(edge_id)
+    }
+}

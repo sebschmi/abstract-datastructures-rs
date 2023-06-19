@@ -67,14 +67,6 @@ impl<NodeData, EdgeData> ImmutableGraphContainer for PetGraph<NodeData, EdgeData
         self.0.edge_weight(edge_id.into()).unwrap()
     }
 
-    fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData {
-        self.0.node_weight_mut(node_id.into()).unwrap()
-    }
-
-    fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData {
-        self.0.edge_weight_mut(edge_id.into()).unwrap()
-    }
-
     fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex> {
         let endpoints = self.0.edge_endpoints(edge_id.into()).unwrap();
         Edge {
@@ -96,6 +88,14 @@ impl<NodeData, EdgeData> MutableGraphContainer for PetGraph<NodeData, EdgeData> 
 
     fn edge_indices_copied(&self) -> Self::EdgeIndicesMut {
         GraphIndices::from((0, self.edge_count()))
+    }
+
+    fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData {
+        self.0.node_weight_mut(node_id.into()).unwrap()
+    }
+
+    fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData {
+        self.0.edge_weight_mut(edge_id.into()).unwrap()
     }
 
     fn add_node(&mut self, node_data: NodeData) -> Self::NodeIndex {

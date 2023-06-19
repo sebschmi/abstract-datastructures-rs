@@ -78,12 +78,6 @@ pub trait ImmutableGraphContainer: GraphBase {
     /// Returns a reference to the edge data associated with the given edge id, or None if there is no such edge.
     fn edge_data(&self, edge_id: Self::EdgeIndex) -> &Self::EdgeData;
 
-    /// Returns a mutable reference to the node data associated with the given node id, or None if there is no such node.
-    fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData;
-
-    /// Returns a mutable reference to the edge data associated with the given edge id, or None if there is no such edge.
-    fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData;
-
     /// Returns the endpoints of an edge.
     fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex>;
 
@@ -92,6 +86,17 @@ pub trait ImmutableGraphContainer: GraphBase {
         // Zero nodes must imply zero edges.
         debug_assert!(self.node_count() != 0 || self.edge_count() == 0);
         self.node_count() == 0
+    }
+
+    /// Returns true if the nodes returned by [`edge_endpoints`](Self::edge_endpoints) are part of the graph for all edges.
+    fn do_all_edges_endpoints_exist(&self) -> bool {
+        for edge_id in self.edge_indices() {
+            let Edge { from_node, to_node } = self.edge_endpoints(edge_id);
+            if !self.contains_node_index(from_node) || !self.contains_node_index(to_node) {
+                return false;
+            }
+        }
+        true
     }
 }
 
@@ -113,6 +118,12 @@ pub trait MutableGraphContainer: ImmutableGraphContainer {
     /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
     /// Note that any modification to the graph is not reflected in the iterator after construction.
     fn edge_indices_copied(&self) -> Self::EdgeIndicesMut;
+
+    /// Returns a mutable reference to the node data associated with the given node id, or None if there is no such node.
+    fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData;
+
+    /// Returns a mutable reference to the edge data associated with the given edge id, or None if there is no such edge.
+    fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData;
 
     /// Adds a new node with the given `NodeData` to the graph.
     fn add_node(&mut self, node_data: Self::NodeData) -> Self::NodeIndex;
