@@ -116,14 +116,17 @@ where
     }
 
     fn node_data(&self, node_id: Self::NodeIndex) -> &Self::NodeData {
+        debug_assert!(self.contains_node_index(node_id));
         self.root().node_data(node_id)
     }
 
     fn edge_data(&self, edge_id: Self::EdgeIndex) -> &Self::EdgeData {
+        debug_assert!(self.contains_edge_index(edge_id));
         self.root().edge_data(edge_id)
     }
 
     fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex> {
+        debug_assert!(self.contains_edge_index(edge_id));
         self.root().edge_endpoints(edge_id)
     }
 }

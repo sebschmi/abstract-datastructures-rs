@@ -1,4 +1,8 @@
-use crate::interface::{GraphBase, SubgraphBase};
+use crate::index::{GraphIndex, OptionalGraphIndex};
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, SubgraphBase};
+use std::cmp::Ordering;
+use std::iter::Peekable;
+use std::marker::PhantomData;
 
 /// A subgraph built from the union of two graphs.
 pub struct UnionSubgraph<'a, Graph0, Graph1>(&'a Graph0, &'a Graph1);
@@ -27,6 +31,120 @@ impl<Graph0: SubgraphBase, Graph1: SubgraphBase> SubgraphBase
 
     fn root(&self) -> &Self::RootGraph {
         self.0.root()
+    }
+}
+
+/// An iterator that returns the union of two sorted iterators over graph indices.
+pub struct UnionIndexIterator<
+    Index: GraphIndex<OptionalIndex>,
+    OptionalIndex: OptionalGraphIndex<Index>,
+    IndexIterator0: Iterator<Item = Index>,
+    IndexIterator1: Iterator<Item = Index>,
+> {
+    index_iterator_0: Peekable<IndexIterator0>,
+    index_iterator_1: Peekable<IndexIterator1>,
+    phantom_index: PhantomData<Index>,
+    phantom_optional_index: PhantomData<OptionalIndex>,
+}
+
+impl<
+        Index: GraphIndex<OptionalIndex>,
+        OptionalIndex: OptionalGraphIndex<Index>,
+        IndexIterator0: Iterator<Item = Index>,
+        IndexIterator1: Iterator<Item = Index>,
+    > Iterator for UnionIndexIterator<Index, OptionalIndex, IndexIterator0, IndexIterator1>
+{
+    type Item = Index;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match (self.index_iterator_0.peek(), self.index_iterator_1.peek()) {
+            (Some(i0), Some(i1)) => match i0.as_usize().cmp(&i1.as_usize()) {
+                Ordering::Less => self.index_iterator_0.next(),
+                Ordering::Equal => {
+                    self.index_iterator_0.next();
+                    self.index_iterator_1.next()
+                }
+                Ordering::Greater => self.index_iterator_1.next(),
+            },
+            (Some(_), None) => self.index_iterator_0.next(),
+            (None, Some(_)) => self.index_iterator_1.next(),
+            (None, None) => None,
+        }
+    }
+}
+
+impl<
+        NodeIndex: GraphIndex<OptionalNodeIndex>,
+        OptionalNodeIndex: OptionalGraphIndex<NodeIndex>,
+        EdgeIndex: GraphIndex<OptionalEdgeIndex>,
+        OptionalEdgeIndex: OptionalGraphIndex<EdgeIndex>,
+        Graph0: ImmutableGraphContainer
+            + SubgraphBase
+            + GraphBase<
+                NodeIndex = NodeIndex,
+                OptionalNodeIndex = OptionalNodeIndex,
+                EdgeIndex = EdgeIndex,
+                OptionalEdgeIndex = OptionalEdgeIndex,
+            >,
+        Graph1: ImmutableGraphContainer
+            + SubgraphBase
+            + GraphBase<
+                NodeIndex = NodeIndex,
+                OptionalNodeIndex = OptionalNodeIndex,
+                EdgeIndex = EdgeIndex,
+                OptionalEdgeIndex = OptionalEdgeIndex,
+            >,
+    > ImmutableGraphContainer for UnionSubgraph<'_, Graph0, Graph1>
+where
+    <Self as SubgraphBase>::RootGraph: ImmutableGraphContainer,
+{
+    type NodeIndices<'a> = UnionIndexIterator<NodeIndex, OptionalNodeIndex, Graph0::NodeIndices<'a>, Graph1::NodeIndices<'a>> where Self: 'a;
+    type EdgeIndices<'a> = UnionIndexIterator<EdgeIndex, OptionalEdgeIndex, Graph0::EdgeIndices<'a>, Graph1::EdgeIndices<'a>> where Self: 'a;
+
+    fn node_indices(&self) -> Self::NodeIndices<'_> {
+        UnionIndexIterator {
+            index_iterator_0: self.0.node_indices().peekable(),
+            index_iterator_1: self.1.node_indices().peekable(),
+            phantom_index: Default::default(),
+            phantom_optional_index: Default::default(),
+        }
+    }
+
+    fn edge_indices(&self) -> Self::EdgeIndices<'_> {
+        UnionIndexIterator {
+            index_iterator_0: self.0.edge_indices().peekable(),
+            index_iterator_1: self.1.edge_indices().peekable(),
+            phantom_index: Default::default(),
+            phantom_optional_index: Default::default(),
+        }
+    }
+
+    fn contains_node_index(&self, node_id: Self::NodeIndex) -> bool {
+        self.0.contains_node_index(node_id) || self.1.contains_node_index(node_id)
+    }
+
+    fn contains_edge_index(&self, edge_id: Self::EdgeIndex) -> bool {
+        self.0.contains_edge_index(edge_id) || self.1.contains_edge_index(edge_id)
+    }
+
+    fn node_count(&self) -> usize {
+        self.node_indices().count()
+    }
+
+    fn edge_count(&self) -> usize {
+        self.edge_indices().count()
+    }
+
+    fn node_data(&self, node_id: Self::NodeIndex) -> &Self::NodeData {
+        self.root().node_data(node_id)
+    }
+
+    fn edge_data(&self, edge_id: Self::EdgeIndex) -> &Self::EdgeData {
+        self.root().edge_data(edge_id)
+    }
+
+    fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex> {
+        self.root().edge_endpoints(edge_id)
     }
 }
 
