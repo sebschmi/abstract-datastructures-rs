@@ -104,7 +104,10 @@ where
     }
 
     fn contains_edge_index(&self, edge_id: Self::EdgeIndex) -> bool {
+        let Edge { from_node, to_node } = self.edge_endpoints(edge_id);
         !self.0.contains_edge_index(edge_id)
+            && self.contains_node_index(from_node)
+            && self.contains_node_index(to_node)
     }
 
     fn node_count(&self) -> usize {
