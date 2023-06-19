@@ -83,12 +83,12 @@ pub fn read_hamcircuit_from_tsplib_atsp<Graph: DynamicGraph, Reader: Read>(
         graph.add_node(Default::default());
     }
 
-    for n1 in graph.node_indices() {
+    for n1 in graph.node_indices_copied() {
         let mut line = String::new();
         reader.read_line(&mut line).unwrap();
         let edges = line.trim().split(' ');
 
-        for (n2, edge_weight) in graph.node_indices().zip(edges) {
+        for (n2, edge_weight) in graph.node_indices_copied().zip(edges) {
             let edge_weight: usize = edge_weight.trim().parse().unwrap();
             if edge_weight == 1 {
                 graph.add_edge(n1, n2, Default::default());
@@ -208,12 +208,12 @@ pub fn read_hamcircuit_from_tsplib_tsp<Graph: DynamicGraph, Reader: Read>(
         graph.add_node(Default::default());
     }
 
-    for n1 in graph.node_indices() {
+    for n1 in graph.node_indices_copied() {
         let mut line = String::new();
         reader.read_line(&mut line).unwrap();
         let edges = line.trim().split(' ');
 
-        for (n2, edge_weight) in graph.node_indices().zip(edges.skip(node_count)) {
+        for (n2, edge_weight) in graph.node_indices_copied().zip(edges.skip(node_count)) {
             let edge_weight: usize = edge_weight.trim().parse().unwrap();
             if edge_weight == 10 {
                 graph.add_edge(n2, n1, Default::default());
@@ -236,7 +236,7 @@ mod tests {
     use crate::{read_hamcircuit_from_tsplib_tsp, write_hamcircuit_as_tsplib_tsp};
     use std::io::{BufReader, BufWriter};
     use traitgraph::implementation::petgraph_impl::PetGraph;
-    use traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
+    use traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer, NavigableGraph};
 
     #[test]
     fn test_write_read_simple() {

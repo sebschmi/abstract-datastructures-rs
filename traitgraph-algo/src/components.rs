@@ -322,7 +322,7 @@ where
                 id_map.push(node);
             }
 
-            for subgraph_node in subgraph.node_indices() {
+            for subgraph_node in subgraph.node_indices_copied() {
                 let node = id_map[subgraph_node.as_usize()];
                 for neighbor in graph.out_neighbors(node) {
                     let edge = neighbor.edge_id;

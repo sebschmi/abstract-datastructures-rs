@@ -95,33 +95,24 @@ pub trait ImmutableGraphContainer: GraphBase {
     }
 }
 
-/// Passes a mutable graph through another type.
-/// Useful for accessing a graph mutably while iterating over its nodes or edges.
-pub trait MutableGraphPassthrough<Graph: ?Sized> {
-    /// Get a mutable reference to the graph.
-    fn graph_mut(&mut self) -> &mut Graph;
-}
-
 /// A container that allows adding and removing nodes and edges.
 pub trait MutableGraphContainer: ImmutableGraphContainer {
     /// The iterator type used to iterate over the outgoing neighbors of a node,
     /// while handing out mutable references to the underlying graph.
-    type NodeIndicesMut<'a>: Iterator<Item = Self::NodeIndex> + MutableGraphPassthrough<Self>
-    where
-        Self: 'a;
+    type NodeIndicesMut: Iterator<Item = Self::NodeIndex>;
     /// The iterator type used to iterate over the incoming neighbors of a node.
     /// while handing out mutable references to the underlying graph.
-    type EdgeIndicesMut<'a>: Iterator<Item = Self::EdgeIndex> + MutableGraphPassthrough<Self>
-    where
-        Self: 'a;
+    type EdgeIndicesMut: Iterator<Item = Self::EdgeIndex>;
 
     /// Returns an iterator over the node indices in this graph.
-    /// The iterator also hands out a mutable reference to this graph in every iteration.
-    fn node_indices_mut(&mut self) -> Self::NodeIndicesMut<'_>;
+    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
+    /// Note that any modification to the graph is not reflected in the iterator after construction.
+    fn node_indices_copied(&self) -> Self::NodeIndicesMut;
 
     /// Returns an iterator over the edge indices in this graph.
-    /// The iterator also hands out a mutable reference to this graph in every iteration.
-    fn edge_indices_mut(&mut self) -> Self::EdgeIndicesMut<'_>;
+    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
+    /// Note that any modification to the graph is not reflected in the iterator after construction.
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesMut;
 
     /// Adds a new node with the given `NodeData` to the graph.
     fn add_node(&mut self, node_data: Self::NodeData) -> Self::NodeIndex;

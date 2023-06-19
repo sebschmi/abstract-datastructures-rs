@@ -70,17 +70,16 @@ pub fn create_random_hamiltonian_graph<Graph: DynamicGraph, Random: Rng>(
         graph.add_node(Default::default());
     }
     for (n1, n2) in graph
-        .node_indices()
+        .node_indices_copied()
         .take(graph.node_count() - 1)
-        .zip(graph.node_indices().skip(1))
+        .zip(graph.node_indices_copied().skip(1))
     {
         graph.add_edge(n1, n2, Default::default());
     }
-    graph.add_edge(
-        graph.node_indices().last().unwrap(),
-        graph.node_indices().next().unwrap(),
-        Default::default(),
-    );
+
+    let n1 = graph.node_indices().last().unwrap();
+    let n2 = graph.node_indices().next().unwrap();
+    graph.add_edge(n1, n2, Default::default());
 
     let target_edge_amount = compute_m_from_n_and_c(node_amount, c);
     debug_assert!(

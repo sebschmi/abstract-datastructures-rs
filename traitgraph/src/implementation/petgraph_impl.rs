@@ -1,14 +1,13 @@
 use crate::index::{GraphIndex, GraphIndices};
 use crate::interface::{
-    Edge, GraphBase, ImmutableGraphContainer, MutableGraphContainer, MutableGraphPassthrough,
-    NavigableGraph, Neighbor,
+    Edge, GraphBase, ImmutableGraphContainer, MutableGraphContainer, NavigableGraph, Neighbor,
+    SubgraphBase,
 };
 use num_traits::{PrimInt, ToPrimitive};
 use petgraph::graph::{DiGraph, Edges, EdgesConnecting};
 use petgraph::visit::EdgeRef;
 use petgraph::{Directed, Direction};
 use std::iter::Map;
-use std::ops::Add;
 
 pub use petgraph;
 
@@ -85,73 +84,18 @@ impl<NodeData, EdgeData> ImmutableGraphContainer for PetGraph<NodeData, EdgeData
     }
 }
 
-/// Iterator over graph indices that allows to access the underlying graph mutably while iterating.
-pub struct MutableIndexIterator<'a, Graph, Index> {
-    graph: &'a mut Graph,
-    current: Index,
-    limit: Index,
-}
-
-impl<'a, Graph, Index: Clone + Eq + Add<usize, Output = Index>> Iterator
-    for MutableIndexIterator<'a, Graph, Index>
-{
-    type Item = Index;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.current != self.limit {
-            let result = self.current.clone();
-            self.current = self.current.clone() + 1;
-            Some(result)
-        } else {
-            None
-        }
-    }
-}
-
-impl<'a, Graph, Index> MutableGraphPassthrough<Graph> for MutableIndexIterator<'a, Graph, Index> {
-    fn graph_mut(&mut self) -> &mut Graph {
-        self.graph
-    }
-}
-
 impl<NodeData, EdgeData> MutableGraphContainer for PetGraph<NodeData, EdgeData> {
-    type NodeIndicesMut<'a> = MutableIndexIterator<'a, Self, <Self as GraphBase>::NodeIndex> where Self: 'a;
-    type EdgeIndicesMut<'a> = MutableIndexIterator<'a, Self, <Self as GraphBase>::EdgeIndex> where Self: 'a;
+    type NodeIndicesMut =
+        GraphIndices<<Self as GraphBase>::NodeIndex, <Self as GraphBase>::OptionalNodeIndex>;
+    type EdgeIndicesMut =
+        GraphIndices<<Self as GraphBase>::EdgeIndex, <Self as GraphBase>::OptionalEdgeIndex>;
 
-    fn node_indices_mut(&mut self) -> Self::NodeIndicesMut<'_> {
-        let current;
-        let limit;
-        if let Some(first) = self.node_indices().next() {
-            current = first;
-            limit = self.node_indices().last().unwrap() + 1;
-        } else {
-            current = Self::NodeIndex::from(0);
-            limit = current;
-        }
-
-        MutableIndexIterator {
-            graph: self,
-            current,
-            limit,
-        }
+    fn node_indices_copied(&self) -> Self::NodeIndicesMut {
+        GraphIndices::from((0, self.node_count()))
     }
 
-    fn edge_indices_mut(&mut self) -> Self::EdgeIndicesMut<'_> {
-        let current;
-        let limit;
-        if let Some(first) = self.edge_indices().next() {
-            current = first;
-            limit = self.edge_indices().last().unwrap() + 1;
-        } else {
-            current = Self::EdgeIndex::from(0);
-            limit = current;
-        }
-
-        MutableIndexIterator {
-            graph: self,
-            current,
-            limit,
-        }
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesMut {
+        GraphIndices::from((0, self.edge_count()))
     }
 
     fn add_node(&mut self, node_data: NodeData) -> Self::NodeIndex {
@@ -188,6 +132,14 @@ impl<NodeData, EdgeData> MutableGraphContainer for PetGraph<NodeData, EdgeData> 
 
     fn clear(&mut self) {
         self.0.clear();
+    }
+}
+
+impl<NodeData, EdgeData> SubgraphBase for PetGraph<NodeData, EdgeData> {
+    type RootGraph = Self;
+
+    fn root(&self) -> &Self::RootGraph {
+        self
     }
 }
 
