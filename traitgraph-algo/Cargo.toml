@@ -3,7 +3,7 @@ name = "traitgraph-algo"
 description = "Graph algorithms based on the traitgraph crate"
 categories = ["data-structures", "mathematics", "science"]
 keywords = ["graph", "trait", "abstract", "implementation", "algorithm"]
-version = "7.0.0-alpha.2"
+version = "7.0.0-alpha.3"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
 edition = "2021"
 homepage = "https://github.com/sebschmi/abstract-datastructures-rs"
@@ -19,7 +19,7 @@ rust-version = "1.65.0"
 hashbrown_dijkstra_node_weight_array = []
 
 [dependencies]
-traitgraph = {version = "4.0.0-alpha.3", path = "../traitgraph"}
+traitgraph = {version = "4.0.0-alpha.4", path = "../traitgraph"}
 rand = "0.8.4"
 hashbrown = {version = "0.14.0"}
 
