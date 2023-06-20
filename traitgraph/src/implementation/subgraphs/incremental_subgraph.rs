@@ -1,5 +1,8 @@
+use crate::implementation::subgraphs::filter_iterators::{
+    FilterEdgeIndexIterator, FilterNeighborIterator,
+};
 use crate::index::GraphIndex;
-use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, SubgraphBase};
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, NavigableGraph, SubgraphBase};
 use std::iter::Filter;
 
 type IntegerType = usize;
@@ -137,5 +140,30 @@ impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for IncrementalSubg
     fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex> {
         debug_assert!(self.contains_edge_index(edge_id));
         self.parent_graph.edge_endpoints(edge_id)
+    }
+}
+
+impl<Graph: NavigableGraph> NavigableGraph for IncrementalSubgraph<'_, Graph> {
+    type OutNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::OutNeighbors<'a>, Self> where Self: 'a;
+    type InNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::InNeighbors<'a>, Self> where Self: 'a;
+    type EdgesBetween<'a> = FilterEdgeIndexIterator<'a, <Graph as NavigableGraph>::EdgesBetween<'a>, Self> where Self: 'a;
+
+    fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_> {
+        FilterNeighborIterator::new(self.parent_graph.out_neighbors(node_id), self)
+    }
+
+    fn in_neighbors(&self, node_id: Self::NodeIndex) -> Self::InNeighbors<'_> {
+        FilterNeighborIterator::new(self.parent_graph.in_neighbors(node_id), self)
+    }
+
+    fn edges_between(
+        &self,
+        from_node_id: Self::NodeIndex,
+        to_node_id: Self::NodeIndex,
+    ) -> Self::EdgesBetween<'_> {
+        FilterEdgeIndexIterator::new(
+            self.parent_graph.edges_between(from_node_id, to_node_id),
+            self,
+        )
     }
 }

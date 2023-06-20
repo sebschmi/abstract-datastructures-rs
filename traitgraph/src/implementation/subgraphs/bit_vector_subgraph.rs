@@ -1,5 +1,10 @@
+use crate::implementation::subgraphs::filter_iterators::{
+    FilterEdgeIndexIterator, FilterNeighborIterator,
+};
 use crate::index::GraphIndex;
-use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, MutableSubgraph, SubgraphBase};
+use crate::interface::{
+    Edge, GraphBase, ImmutableGraphContainer, MutableSubgraph, NavigableGraph, SubgraphBase,
+};
 use bitvec::bitvec;
 use bitvec::vec::BitVec;
 
@@ -25,7 +30,7 @@ where
     }
 }
 
-impl<'a, Graph: GraphBase> GraphBase for BitVectorSubgraph<'a, Graph> {
+impl<Graph: GraphBase> GraphBase for BitVectorSubgraph<'_, Graph> {
     type NodeData = Graph::NodeData;
     type EdgeData = Graph::EdgeData;
     type OptionalNodeIndex = Graph::OptionalNodeIndex;
@@ -34,9 +39,9 @@ impl<'a, Graph: GraphBase> GraphBase for BitVectorSubgraph<'a, Graph> {
     type EdgeIndex = Graph::EdgeIndex;
 }
 
-impl<'a, Graph: ImmutableGraphContainer> ImmutableGraphContainer for BitVectorSubgraph<'a, Graph> {
-    type NodeIndices<'node_indices> = std::iter::Filter<Graph::NodeIndices<'node_indices>, Box<dyn 'node_indices + Fn(&Graph::NodeIndex) -> bool>> where Self: 'node_indices, Graph: 'node_indices;
-    type EdgeIndices<'edge_indices> = std::iter::Filter<Graph::EdgeIndices<'edge_indices>, Box<dyn 'edge_indices + Fn(&Graph::EdgeIndex) -> bool>> where Self: 'edge_indices, Graph: 'edge_indices;
+impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for BitVectorSubgraph<'_, Graph> {
+    type NodeIndices<'a> = std::iter::Filter<Graph::NodeIndices<'a>, Box<dyn 'a + Fn(&Graph::NodeIndex) -> bool>> where Self: 'a, Graph: 'a;
+    type EdgeIndices<'a> = std::iter::Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&Graph::EdgeIndex) -> bool>> where Self: 'a, Graph: 'a;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.parent_graph
@@ -90,9 +95,32 @@ impl<'a, Graph: ImmutableGraphContainer> ImmutableGraphContainer for BitVectorSu
     }
 }
 
-impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
-    for BitVectorSubgraph<'a, Graph>
-{
+impl<Graph: NavigableGraph> NavigableGraph for BitVectorSubgraph<'_, Graph> {
+    type OutNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::OutNeighbors<'a>, Self> where Self: 'a;
+    type InNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::InNeighbors<'a>, Self> where Self: 'a;
+    type EdgesBetween<'a> = FilterEdgeIndexIterator<'a, <Graph as NavigableGraph>::EdgesBetween<'a>, Self> where Self: 'a;
+
+    fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_> {
+        FilterNeighborIterator::new(self.parent_graph.out_neighbors(node_id), self)
+    }
+
+    fn in_neighbors(&self, node_id: Self::NodeIndex) -> Self::InNeighbors<'_> {
+        FilterNeighborIterator::new(self.parent_graph.in_neighbors(node_id), self)
+    }
+
+    fn edges_between(
+        &self,
+        from_node_id: Self::NodeIndex,
+        to_node_id: Self::NodeIndex,
+    ) -> Self::EdgesBetween<'_> {
+        FilterEdgeIndexIterator::new(
+            self.parent_graph.edges_between(from_node_id, to_node_id),
+            self,
+        )
+    }
+}
+
+impl<Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase for BitVectorSubgraph<'_, Graph> {
     type RootGraph = Graph::RootGraph;
 
     fn root(&self) -> &Self::RootGraph {
@@ -100,8 +128,7 @@ impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
     }
 }
 
-impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> MutableSubgraph
-    for BitVectorSubgraph<'a, Graph>
+impl<Graph: ImmutableGraphContainer + SubgraphBase> MutableSubgraph for BitVectorSubgraph<'_, Graph>
 where
     Self: GraphBase<
         NodeIndex = <Graph as GraphBase>::NodeIndex,

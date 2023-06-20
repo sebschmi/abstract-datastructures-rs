@@ -136,7 +136,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::implementation::subgraph_operators::inverted_subgraph::InvertedIndexIterator;
+    use crate::implementation::subgraphs::subgraph_operators::inverted_subgraph::InvertedIndexIterator;
     use crate::index::{GraphIndex, NodeIndex};
 
     #[test]
