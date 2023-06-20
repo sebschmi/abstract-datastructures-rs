@@ -2,7 +2,7 @@ use crate::implementation::subgraphs::filter_iterators::{
     FilterEdgeIndexIterator, FilterNeighborIterator,
 };
 use crate::index::GraphIndex;
-use crate::interface::subgraph::SubgraphBase;
+use crate::interface::subgraph::{MutableSubgraph, SubgraphBase};
 use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, NavigableGraph};
 use std::iter::Filter;
 
@@ -175,5 +175,49 @@ impl<Graph: NavigableGraph> NavigableGraph for IncrementalSubgraph<'_, Graph> {
             self.parent_graph.edges_between(from_node_id, to_node_id),
             self,
         )
+    }
+}
+
+impl<Graph: ImmutableGraphContainer + SubgraphBase> MutableSubgraph
+    for IncrementalSubgraph<'_, Graph>
+{
+    fn clear(&mut self) {
+        unimplemented!("Not supported")
+    }
+
+    fn fill(&mut self) {
+        unimplemented!("Not supported")
+    }
+
+    fn enable_node(
+        &mut self,
+        node_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::NodeIndex,
+    ) {
+        debug_assert!(!self.contains_node_index(node_index));
+        self.new_nodes[self.current_step].push(node_index);
+        self.present_nodes[node_index.as_usize()] = self.current_step;
+    }
+
+    fn enable_edge(
+        &mut self,
+        edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
+    ) {
+        debug_assert!(!self.contains_edge_index(edge_index));
+        self.new_edges[self.current_step].push(edge_index);
+        self.present_edges[edge_index.as_usize()] = self.current_step;
+    }
+
+    fn disable_node(
+        &mut self,
+        _node_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::NodeIndex,
+    ) {
+        unimplemented!("Not supported")
+    }
+
+    fn disable_edge(
+        &mut self,
+        _edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
+    ) {
+        unimplemented!("Not supported")
     }
 }
