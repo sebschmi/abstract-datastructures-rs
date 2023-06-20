@@ -1,5 +1,6 @@
 use crate::index::{GraphIndex, OptionalGraphIndex};
-use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, SubgraphBase};
+use crate::interface::subgraph::SubgraphBase;
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer};
 use std::cmp::Ordering;
 use std::iter::Peekable;
 use std::marker::PhantomData;
@@ -100,6 +101,18 @@ where
 {
     type NodeIndices<'a> = UnionIndexIterator<NodeIndex, OptionalNodeIndex, Graph0::NodeIndices<'a>, Graph1::NodeIndices<'a>> where Self: 'a;
     type EdgeIndices<'a> = UnionIndexIterator<EdgeIndex, OptionalEdgeIndex, Graph0::EdgeIndices<'a>, Graph1::EdgeIndices<'a>> where Self: 'a;
+    type NodeIndicesCopied = UnionIndexIterator<
+        NodeIndex,
+        OptionalNodeIndex,
+        Graph0::NodeIndicesCopied,
+        Graph1::NodeIndicesCopied,
+    >;
+    type EdgeIndicesCopied = UnionIndexIterator<
+        EdgeIndex,
+        OptionalEdgeIndex,
+        Graph0::EdgeIndicesCopied,
+        Graph1::EdgeIndicesCopied,
+    >;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         UnionIndexIterator {
@@ -114,6 +127,24 @@ where
         UnionIndexIterator {
             index_iterator_0: self.0.edge_indices().peekable(),
             index_iterator_1: self.1.edge_indices().peekable(),
+            phantom_index: Default::default(),
+            phantom_optional_index: Default::default(),
+        }
+    }
+
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied {
+        UnionIndexIterator {
+            index_iterator_0: self.0.node_indices_copied().peekable(),
+            index_iterator_1: self.1.node_indices_copied().peekable(),
+            phantom_index: Default::default(),
+            phantom_optional_index: Default::default(),
+        }
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied {
+        UnionIndexIterator {
+            index_iterator_0: self.0.edge_indices_copied().peekable(),
+            index_iterator_1: self.1.edge_indices_copied().peekable(),
             phantom_index: Default::default(),
             phantom_optional_index: Default::default(),
         }

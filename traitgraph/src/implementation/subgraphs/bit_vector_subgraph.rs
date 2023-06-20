@@ -2,9 +2,8 @@ use crate::implementation::subgraphs::filter_iterators::{
     FilterEdgeIndexIterator, FilterNeighborIterator,
 };
 use crate::index::GraphIndex;
-use crate::interface::{
-    Edge, GraphBase, ImmutableGraphContainer, MutableSubgraph, NavigableGraph, SubgraphBase,
-};
+use crate::interface::subgraph::{MutableSubgraph, SubgraphBase};
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, NavigableGraph};
 use bitvec::bitvec;
 use bitvec::vec::BitVec;
 
@@ -53,6 +52,15 @@ impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for BitVectorSubgra
         self.parent_graph
             .edge_indices()
             .filter(Box::new(|&edge_index| self.contains_edge_index(edge_index)))
+    }
+    type NodeIndicesCopied = std::vec::IntoIter<Graph::NodeIndex>;
+    type EdgeIndicesCopied = std::vec::IntoIter<Graph::EdgeIndex>;
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied {
+        self.node_indices().collect::<Vec<_>>().into_iter()
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied {
+        self.edge_indices().collect::<Vec<_>>().into_iter()
     }
 
     fn contains_node_index(&self, node_id: Self::NodeIndex) -> bool {

@@ -1,5 +1,6 @@
 use crate::index::{GraphIndex, OptionalGraphIndex};
-use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, SubgraphBase};
+use crate::interface::subgraph::SubgraphBase;
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer};
 use std::iter;
 use std::marker::PhantomData;
 
@@ -78,6 +79,10 @@ where
 {
     type NodeIndices<'a> = InvertedIndexIterator<Self::NodeIndex, Self::OptionalNodeIndex, Graph::NodeIndices<'a>> where Self: 'a;
     type EdgeIndices<'a> = InvertedIndexIterator<Self::EdgeIndex, Self::OptionalEdgeIndex, Graph::EdgeIndices<'a>> where Self: 'a;
+    type NodeIndicesCopied =
+        InvertedIndexIterator<Self::NodeIndex, Self::OptionalNodeIndex, Graph::NodeIndicesCopied>;
+    type EdgeIndicesCopied =
+        InvertedIndexIterator<Self::EdgeIndex, Self::OptionalEdgeIndex, Graph::EdgeIndicesCopied>;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         InvertedIndexIterator {
@@ -92,6 +97,26 @@ where
     fn edge_indices(&self) -> Self::EdgeIndices<'_> {
         InvertedIndexIterator {
             uninverted_iterator: self.0.edge_indices().peekable(),
+            current: 0,
+            maximum: self.root().edge_count(),
+            phantom_index: Default::default(),
+            phantom_optional_index: Default::default(),
+        }
+    }
+
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied {
+        InvertedIndexIterator {
+            uninverted_iterator: self.0.node_indices_copied().peekable(),
+            current: 0,
+            maximum: self.root().node_count(),
+            phantom_index: Default::default(),
+            phantom_optional_index: Default::default(),
+        }
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied {
+        InvertedIndexIterator {
+            uninverted_iterator: self.0.edge_indices_copied().peekable(),
             current: 0,
             maximum: self.root().edge_count(),
             phantom_index: Default::default(),

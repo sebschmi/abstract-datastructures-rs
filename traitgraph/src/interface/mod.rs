@@ -45,20 +45,38 @@ pub trait GraphBase {
 ///
 /// Graphs that implement this trait must have their nodes and edges indexed consecutively.
 pub trait ImmutableGraphContainer: GraphBase {
-    /// The iterator type used to iterate over the outgoing neighbors of a node.
+    /// An iterator type over the node indices in this graph.
     type NodeIndices<'a>: Iterator<Item = Self::NodeIndex>
     where
         Self: 'a;
-    /// The iterator type used to iterate over the incoming neighbors of a node.
+    /// An iterator type over the edge indices in this graph.
     type EdgeIndices<'a>: Iterator<Item = Self::EdgeIndex>
     where
         Self: 'a;
+    /// An iterator type over the node indices in this graph.
+    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
+    /// Note that any modification to the graph is not reflected in the iterator after construction.
+    type NodeIndicesCopied: Iterator<Item = Self::NodeIndex>;
+    /// An iterator type over the edge indices in this graph.
+    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
+    /// Note that any modification to the graph is not reflected in the iterator after construction.
+    type EdgeIndicesCopied: Iterator<Item = Self::EdgeIndex>;
 
     /// Returns an iterator over the node indices in this graph.
     fn node_indices(&self) -> Self::NodeIndices<'_>;
 
     /// Returns an iterator over the edge indices in this graph.
     fn edge_indices(&self) -> Self::EdgeIndices<'_>;
+
+    /// Returns an iterator over the node indices in this graph.
+    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
+    /// Note that any modification to the graph is not reflected in the iterator after construction.
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied;
+
+    /// Returns an iterator over the edge indices in this graph.
+    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
+    /// Note that any modification to the graph is not reflected in the iterator after construction.
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied;
 
     /// Returns true if this graph contains the given node index.
     fn contains_node_index(&self, node_id: Self::NodeIndex) -> bool;
@@ -102,23 +120,6 @@ pub trait ImmutableGraphContainer: GraphBase {
 
 /// A container that allows adding and removing nodes and edges.
 pub trait MutableGraphContainer: ImmutableGraphContainer {
-    /// The iterator type used to iterate over the outgoing neighbors of a node,
-    /// while handing out mutable references to the underlying graph.
-    type NodeIndicesMut: Iterator<Item = Self::NodeIndex>;
-    /// The iterator type used to iterate over the incoming neighbors of a node.
-    /// while handing out mutable references to the underlying graph.
-    type EdgeIndicesMut: Iterator<Item = Self::EdgeIndex>;
-
-    /// Returns an iterator over the node indices in this graph.
-    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
-    /// Note that any modification to the graph is not reflected in the iterator after construction.
-    fn node_indices_copied(&self) -> Self::NodeIndicesMut;
-
-    /// Returns an iterator over the edge indices in this graph.
-    /// The iterator is independent of the lifetime of self, and hence allows concurrent modifications during iteration.
-    /// Note that any modification to the graph is not reflected in the iterator after construction.
-    fn edge_indices_copied(&self) -> Self::EdgeIndicesMut;
-
     /// Returns a mutable reference to the node data associated with the given node id, or None if there is no such node.
     fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData;
 
@@ -166,60 +167,6 @@ pub trait MutableGraphContainer: ImmutableGraphContainer {
 
     /// Removes all nodes and edges from the graph.
     fn clear(&mut self);
-}
-
-/// A type that represents a subgraph of another graph.
-pub trait SubgraphBase: GraphBase {
-    /// The root graph of this subgraph, which is either its parent or the root of a DAG of subgraphs.
-    type RootGraph: GraphBase<
-        NodeData = Self::NodeData,
-        EdgeData = Self::EdgeData,
-        NodeIndex = Self::NodeIndex,
-        EdgeIndex = Self::EdgeIndex,
-        OptionalNodeIndex = Self::OptionalNodeIndex,
-        OptionalEdgeIndex = Self::OptionalEdgeIndex,
-    >;
-
-    /// Returns a reference to the root graph of this subgraph.
-    fn root(&self) -> &Self::RootGraph;
-}
-
-/// A type that represents a mutable subgraph, to which nodes and edges existing in the parent graph can be added,
-/// and nodes and edges can be removed.
-pub trait MutableSubgraph: SubgraphBase {
-    /// Removes all nodes and edges from the subgraph.
-    fn clear(&mut self);
-
-    /// Adds all nodes and edges from the parent graph to this subgraph.
-    fn fill(&mut self);
-
-    /// Enables the given node index that exists in the root graph in this subgraph.
-    /// This method should only be called for nodes that are enabled in the parent of this subgraph.
-    fn enable_node(
-        &mut self,
-        node_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::NodeIndex,
-    );
-
-    /// Enables the given edge index that exists in the root graph in this subgraph.
-    /// This method should only be called for edges that are enabled in the parent of this subgraph.
-    fn enable_edge(
-        &mut self,
-        edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
-    );
-
-    /// Disables the given node index that exists in the root graph in this subgraph.
-    /// This method should only be called for nodes that are enabled in the parent of this subgraph.
-    fn disable_node(
-        &mut self,
-        node_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::NodeIndex,
-    );
-
-    /// Disables the given edge index that exists in the root graph in this subgraph.
-    /// This method should only be called for edges that are enabled in the parent of this subgraph.
-    fn disable_edge(
-        &mut self,
-        edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
-    );
 }
 
 /// A graph that can be navigated, i.e. that can iterate the neighbors of its nodes.

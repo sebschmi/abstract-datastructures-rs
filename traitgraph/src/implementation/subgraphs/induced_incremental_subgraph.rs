@@ -1,5 +1,6 @@
 use crate::index::{GraphIndex, OptionalGraphIndex};
-use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, SubgraphBase};
+use crate::interface::subgraph::SubgraphBase;
+use crate::interface::{Edge, GraphBase, ImmutableGraphContainer};
 use std::iter::Filter;
 use std::marker::PhantomData;
 
@@ -136,6 +137,15 @@ impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer
         self.parent_graph
             .edge_indices()
             .filter(Box::new(|e| self.contains_edge_index(*e)))
+    }
+    type NodeIndicesCopied = std::vec::IntoIter<Graph::NodeIndex>;
+    type EdgeIndicesCopied = std::vec::IntoIter<Graph::EdgeIndex>;
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied {
+        self.node_indices().collect::<Vec<_>>().into_iter()
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied {
+        self.edge_indices().collect::<Vec<_>>().into_iter()
     }
 
     fn contains_node_index(&self, node_id: Self::NodeIndex) -> bool {

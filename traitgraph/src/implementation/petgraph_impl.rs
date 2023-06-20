@@ -1,7 +1,6 @@
 use crate::index::{GraphIndex, GraphIndices};
 use crate::interface::{
     Edge, GraphBase, ImmutableGraphContainer, MutableGraphContainer, NavigableGraph, Neighbor,
-    SubgraphBase,
 };
 use num_traits::{PrimInt, ToPrimitive};
 use petgraph::graph::{DiGraph, Edges, EdgesConnecting};
@@ -9,6 +8,7 @@ use petgraph::visit::EdgeRef;
 use petgraph::{Directed, Direction};
 use std::iter::Map;
 
+use crate::interface::subgraph::SubgraphBase;
 pub use petgraph;
 
 /// A wrapper around the [petgraph::graph::Graph] type replacing its methods with implementations of our traits.
@@ -35,11 +35,23 @@ impl<NodeData, EdgeData> ImmutableGraphContainer for PetGraph<NodeData, EdgeData
     type NodeIndices<'a> = GraphIndices<Self::NodeIndex, Self::OptionalNodeIndex> where Self: 'a;
     type EdgeIndices<'a> = GraphIndices<Self::EdgeIndex, Self::OptionalEdgeIndex> where Self: 'a;
 
+    type NodeIndicesCopied =
+        GraphIndices<<Self as GraphBase>::NodeIndex, <Self as GraphBase>::OptionalNodeIndex>;
+    type EdgeIndicesCopied =
+        GraphIndices<<Self as GraphBase>::EdgeIndex, <Self as GraphBase>::OptionalEdgeIndex>;
+
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         GraphIndices::from((0, self.node_count()))
     }
-
     fn edge_indices(&self) -> Self::EdgeIndices<'_> {
+        GraphIndices::from((0, self.edge_count()))
+    }
+
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied {
+        GraphIndices::from((0, self.node_count()))
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied {
         GraphIndices::from((0, self.edge_count()))
     }
 
@@ -77,19 +89,6 @@ impl<NodeData, EdgeData> ImmutableGraphContainer for PetGraph<NodeData, EdgeData
 }
 
 impl<NodeData, EdgeData> MutableGraphContainer for PetGraph<NodeData, EdgeData> {
-    type NodeIndicesMut =
-        GraphIndices<<Self as GraphBase>::NodeIndex, <Self as GraphBase>::OptionalNodeIndex>;
-    type EdgeIndicesMut =
-        GraphIndices<<Self as GraphBase>::EdgeIndex, <Self as GraphBase>::OptionalEdgeIndex>;
-
-    fn node_indices_copied(&self) -> Self::NodeIndicesMut {
-        GraphIndices::from((0, self.node_count()))
-    }
-
-    fn edge_indices_copied(&self) -> Self::EdgeIndicesMut {
-        GraphIndices::from((0, self.edge_count()))
-    }
-
     fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData {
         self.0.node_weight_mut(node_id.into()).unwrap()
     }
