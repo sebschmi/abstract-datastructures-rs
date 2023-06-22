@@ -53,3 +53,9 @@ pub trait MutableSubgraph: SubgraphBase {
         edge_index: <<Self as SubgraphBase>::RootGraph as GraphBase>::EdgeIndex,
     );
 }
+
+/// A subgraph type for which an empty instance can be constructed using an instance of the root graph type.
+pub trait EmptyConstructibleSubgraph<'a>: SubgraphBase {
+    /// Construct an empty subgraph instance for the given root graph.
+    fn new_empty(graph: &'a <Self as SubgraphBase>::RootGraph) -> Self;
+}

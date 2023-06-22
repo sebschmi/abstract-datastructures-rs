@@ -2,7 +2,7 @@ use crate::implementation::subgraphs::filter_iterators::{
     FilterEdgeIndexIterator, FilterNeighborIterator,
 };
 use crate::index::GraphIndex;
-use crate::interface::subgraph::{MutableSubgraph, SubgraphBase};
+use crate::interface::subgraph::{EmptyConstructibleSubgraph, MutableSubgraph, SubgraphBase};
 use crate::interface::{Edge, GraphBase, ImmutableGraphContainer, NavigableGraph};
 use bitvec::bitvec;
 use bitvec::vec::BitVec;
@@ -128,7 +128,7 @@ impl<Graph: NavigableGraph> NavigableGraph for BitVectorSubgraph<'_, Graph> {
     }
 }
 
-impl<Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase for BitVectorSubgraph<'_, Graph> {
+impl<Graph: SubgraphBase> SubgraphBase for BitVectorSubgraph<'_, Graph> {
     type RootGraph = Graph::RootGraph;
 
     fn root(&self) -> &Self::RootGraph {
@@ -187,6 +187,20 @@ where
     ) {
         debug_assert!(self.parent_graph.contains_edge_index(edge_index));
         self.present_edges.set(edge_index.as_usize(), false);
+    }
+}
+
+impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> EmptyConstructibleSubgraph<'a>
+    for BitVectorSubgraph<'a, Graph>
+where
+    Self: SubgraphBase<RootGraph = Graph>,
+{
+    fn new_empty(root_graph: &'a <Self as SubgraphBase>::RootGraph) -> Self {
+        Self {
+            parent_graph: root_graph,
+            present_nodes: bitvec![0; root_graph.node_count()],
+            present_edges: bitvec![0; root_graph.edge_count()],
+        }
     }
 }
 
