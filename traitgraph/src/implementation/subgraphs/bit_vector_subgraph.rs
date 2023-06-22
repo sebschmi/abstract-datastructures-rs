@@ -144,8 +144,8 @@ where
     >,
 {
     fn clear(&mut self) {
-        self.present_nodes.clear();
-        self.present_edges.clear();
+        self.present_nodes.fill(false);
+        self.present_edges.fill(false);
     }
 
     fn fill(&mut self) {
@@ -206,6 +206,10 @@ where
 
 #[cfg(test)]
 mod tests {
+    use crate::implementation::petgraph_impl::PetGraph;
+    use crate::implementation::subgraphs::bit_vector_subgraph::BitVectorSubgraph;
+    use crate::interface::subgraph::MutableSubgraph;
+    use crate::interface::{ImmutableGraphContainer, MutableGraphContainer};
     use bitvec::bitvec;
 
     #[test]
@@ -214,5 +218,33 @@ mod tests {
         assert_eq!(bv.len(), 12);
         assert_eq!(bv.iter_ones().sum::<usize>(), 0);
         assert_eq!(bv.iter_zeros().sum::<usize>(), (0..12).sum());
+    }
+
+    #[test]
+    fn test_clear() {
+        let mut graph = PetGraph::new();
+        let n: Vec<_> = (0..10).map(|i| graph.add_node(i)).collect();
+        let e: Vec<_> = (0..9)
+            .map(|i| graph.add_edge(n[i], n[i + 1], i + 100))
+            .collect();
+        let mut subgraph = BitVectorSubgraph::new_empty(&graph);
+        assert!(subgraph.node_indices().next().is_none());
+        assert!(subgraph.edge_indices().next().is_none());
+
+        subgraph.enable_node(n[2]);
+        subgraph.enable_node(n[3]);
+        subgraph.enable_edge(e[2]);
+        assert_eq!(
+            subgraph.node_indices().collect::<Vec<_>>(),
+            n[2..4].to_vec()
+        );
+        assert_eq!(
+            subgraph.edge_indices().collect::<Vec<_>>(),
+            e[2..3].to_vec()
+        );
+
+        subgraph.clear();
+        assert!(subgraph.node_indices().next().is_none());
+        assert!(subgraph.edge_indices().next().is_none());
     }
 }

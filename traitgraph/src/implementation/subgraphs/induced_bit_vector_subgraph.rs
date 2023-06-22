@@ -118,7 +118,7 @@ where
     >,
 {
     fn clear(&mut self) {
-        self.present_nodes.clear();
+        self.present_nodes.fill(false);
     }
 
     fn fill(&mut self) {
