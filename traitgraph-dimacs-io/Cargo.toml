@@ -3,7 +3,7 @@ name = "traitgraph-dimacs-io"
 description = "Functions to read and write graphs in DIMACS format"
 categories = ["data-structures", "mathematics", "science"]
 keywords = ["graph", "trait", "abstract", "implementation", "dimacs"]
-version = "3.0.0"
+version = "4.0.0"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
 edition = "2021"
 homepage = "https://github.com/sebschmi/abstract-datastructures-rs"
@@ -16,4 +16,4 @@ rust-version = "1.65.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-traitgraph = {version = "4.0.0-alpha.1", path = "../traitgraph"}
+traitgraph = {version = "4.0.0", path = "../traitgraph"}
