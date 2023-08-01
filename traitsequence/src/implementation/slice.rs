@@ -1,9 +1,9 @@
 use crate::interface::{CloneableSequence, Sequence, SequenceMut};
 
-impl<'a, Item: 'a> Sequence<'a, Item, [Item]> for [Item] {
-    type Iterator = std::slice::Iter<'a, Item>;
+impl<Item> Sequence<Item, [Item]> for [Item] {
+    type Iterator<'a> = std::slice::Iter<'a, Item> where Item: 'a;
 
-    fn iter(&'a self) -> Self::Iterator {
+    fn iter(&self) -> Self::Iterator<'_> {
         <[Item]>::iter(self)
     }
 
@@ -12,14 +12,14 @@ impl<'a, Item: 'a> Sequence<'a, Item, [Item]> for [Item] {
     }
 }
 
-impl<'a, Item: 'a> SequenceMut<'a, Item, [Item]> for [Item] {
-    type IteratorMut = std::slice::IterMut<'a, Item>;
-    fn iter_mut(&'a mut self) -> Self::IteratorMut {
+impl<Item> SequenceMut<Item, [Item]> for [Item] {
+    type IteratorMut<'a> = std::slice::IterMut<'a, Item> where Item: 'a;
+    fn iter_mut(&mut self) -> Self::IteratorMut<'_> {
         <[Item]>::iter_mut(self)
     }
 }
 
-impl<'a, Item: 'a + Clone> CloneableSequence<'a, Item, [Item]> for [Item] {}
+impl<Item: Clone> CloneableSequence<Item, [Item]> for [Item] {}
 
 #[cfg(test)]
 mod tests {

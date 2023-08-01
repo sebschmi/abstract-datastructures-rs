@@ -1,8 +1,8 @@
 use crate::interface::{CloneableSequence, EditableSequence, OwnedSequence, Sequence, SequenceMut};
 
-impl<'a, Item: 'a> Sequence<'a, Item, [Item]> for Vec<Item> {
-    type Iterator = std::slice::Iter<'a, Item>;
-    fn iter(&'a self) -> Self::Iterator {
+impl<Item> Sequence<Item, [Item]> for Vec<Item> {
+    type Iterator<'a> = std::slice::Iter<'a, Item> where Item: 'a;
+    fn iter(&self) -> Self::Iterator<'_> {
         self[..].iter()
     }
 
@@ -11,20 +11,20 @@ impl<'a, Item: 'a> Sequence<'a, Item, [Item]> for Vec<Item> {
     }
 }
 
-impl<'a, Item: 'a> SequenceMut<'a, Item, [Item]> for Vec<Item> {
-    type IteratorMut = std::slice::IterMut<'a, Item>;
+impl<Item> SequenceMut<Item, [Item]> for Vec<Item> {
+    type IteratorMut<'a> = std::slice::IterMut<'a, Item> where Item: 'a;
 
-    fn iter_mut(&'a mut self) -> Self::IteratorMut {
+    fn iter_mut(&mut self) -> Self::IteratorMut<'_> {
         self[..].iter_mut()
     }
 }
 
-impl<'a, Item: 'a> OwnedSequence<'a, Item, [Item]> for Vec<Item> {}
+impl<Item> OwnedSequence<Item, [Item]> for Vec<Item> {}
 
-impl<'a, Item: 'a + Clone> CloneableSequence<'a, Item, [Item]> for Vec<Item> {}
+impl<Item: Clone> CloneableSequence<Item, [Item]> for Vec<Item> {}
 
-impl<'a, Item: 'a> EditableSequence<'a, Item, [Item]> for Vec<Item> {
-    fn split_off(&'a mut self, at: usize) -> Self {
+impl<Item> EditableSequence<Item, [Item]> for Vec<Item> {
+    fn split_off(&mut self, at: usize) -> Self {
         Vec::split_off(self, at)
     }
 }
