@@ -20,6 +20,26 @@ where
     Graph::NodeData: Clone,
     Graph::EdgeData: Clone,
 {
+    decompose_weakly_connected_components_with_mappings(graph)
+        .into_iter()
+        .map(|(graph, _, _)| graph)
+        .collect()
+}
+
+/// Returns the weakly connected components of a graph,
+/// as well as a mapping from node indices in the WCCs to node indices in the source graph,
+/// and a mapping from edge indices in the WCCs to edge indices in the source graph.
+///
+/// If the graph is empty, no WCCs are returned.
+/// Otherwise, the WCCs are cloned into new graphs, without preserving the node or edge indices.
+#[allow(clippy::type_complexity)]
+pub fn decompose_weakly_connected_components_with_mappings<Graph: Default + DynamicGraph>(
+    graph: &Graph,
+) -> Vec<(Graph, Vec<Graph::NodeIndex>, Vec<Graph::EdgeIndex>)>
+where
+    Graph::NodeData: Clone,
+    Graph::EdgeData: Clone,
+{
     let mut result = Vec::new();
     let mut nodes: Vec<_> = graph.node_indices().collect();
     let mut visited = vec![false; graph.node_count()];
@@ -32,6 +52,8 @@ where
 
         let rank_offset = bfs.continue_traversal_from(start).as_usize();
         let mut subgraph = Graph::default();
+        let mut node_mapping = Vec::new();
+        let mut edge_mapping = Vec::new();
 
         while let Some(node) = bfs.next() {
             let node = if let NodeOrEdge::Node(node) = node {
@@ -42,6 +64,7 @@ where
             visited[node.as_usize()] = true;
             //println!("add_node: {:?}", node);
             let subnode = subgraph.add_node(graph.node_data(node).clone());
+            node_mapping.push(node);
 
             for out_neighbor in graph.out_neighbors(node) {
                 let neighbor_id = out_neighbor.node_id;
@@ -58,6 +81,7 @@ where
                         let edge_data = graph.edge_data(edge_id).clone();
                         //println!("f: ({:?}, {:?}) becomes ({:?}, {:?})", node, neighbor_id, subnode, subneighbor);
                         subgraph.add_edge(subnode, subneighbor, edge_data);
+                        edge_mapping.push(edge_id);
                     }
                 }
             }
@@ -83,12 +107,13 @@ where
                         let edge_data = graph.edge_data(edge_id).clone();
                         //println!("r: ({:?}, {:?}) becomes ({:?}, {:?})", neighbor_id, node, subneighbor, subnode);
                         subgraph.add_edge(subneighbor, subnode, edge_data);
+                        edge_mapping.push(edge_id);
                     }
                 }
             }
         }
 
-        result.push(subgraph);
+        result.push((subgraph, node_mapping, edge_mapping));
     }
 
     result
@@ -349,11 +374,13 @@ pub fn is_cycle<Graph: StaticGraph>(graph: &Graph) -> bool {
 #[cfg(test)]
 mod tests {
     use crate::components::{
-        decompose_strongly_connected_components, decompose_weakly_connected_components,
-        extract_subgraphs_from_node_mapping, is_strongly_connected, naively_compute_strong_bridges,
+        decompose_strongly_connected_components,
+        decompose_weakly_connected_components_with_mappings, extract_subgraphs_from_node_mapping,
+        is_strongly_connected, naively_compute_strong_bridges,
     };
     use std::fmt::Debug;
     use traitgraph::implementation::petgraph_impl::PetGraph;
+    use traitgraph::index::GraphIndex;
     use traitgraph::interface::{GraphBase, ImmutableGraphContainer, MutableGraphContainer};
 
     fn debug_assert_node_data<Graph: ImmutableGraphContainer>(
@@ -409,9 +436,9 @@ mod tests {
         let _e8 = graph.add_edge(n4, n3, 18);
         let _e9 = graph.add_edge(n0, n4, 19);
         let _e10 = graph.add_edge(n2, n2, 20);
-        let result = decompose_weakly_connected_components(&graph);
+        let result = decompose_weakly_connected_components_with_mappings(&graph);
         debug_assert_eq!(result.len(), 1);
-        let result = result.first().unwrap();
+        let (result, node_mapping, edge_mapping) = result.first().unwrap();
         debug_assert_eq!(result.node_count(), graph.node_count());
         debug_assert_eq!(result.edge_count(), graph.edge_count());
 
@@ -433,6 +460,20 @@ mod tests {
             edge_data,
             vec![10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 115, 145]
         );
+
+        for node in result.node_indices() {
+            debug_assert_eq!(
+                result.node_data(node),
+                graph.node_data(node_mapping[node.as_usize()])
+            );
+        }
+
+        for edge in result.edge_indices() {
+            debug_assert_eq!(
+                result.edge_data(edge),
+                graph.edge_data(edge_mapping[edge.as_usize()])
+            );
+        }
     }
 
     #[test]
@@ -452,9 +493,9 @@ mod tests {
         let _e6 = graph.add_edge(n4, n3, 18);
         let _e7 = graph.add_edge(n2, n2, 20);
         let _e8 = graph.add_edge(n2, n2, 21);
-        let result = decompose_weakly_connected_components(&graph);
+        let result = decompose_weakly_connected_components_with_mappings(&graph);
         debug_assert_eq!(result.len(), 1);
-        let result = result.first().unwrap();
+        let (result, node_mapping, edge_mapping) = result.first().unwrap();
         debug_assert_eq!(result.node_count(), graph.node_count());
         debug_assert_eq!(result.edge_count(), graph.edge_count());
 
@@ -473,6 +514,20 @@ mod tests {
             .collect();
         edge_data.sort_unstable();
         debug_assert_eq!(edge_data, vec![10, 11, 12, 13, 15, 17, 18, 20, 21]);
+
+        for node in result.node_indices() {
+            debug_assert_eq!(
+                result.node_data(node),
+                graph.node_data(node_mapping[node.as_usize()])
+            );
+        }
+
+        for edge in result.edge_indices() {
+            debug_assert_eq!(
+                result.edge_data(edge),
+                graph.edge_data(edge_mapping[edge.as_usize()])
+            );
+        }
     }
 
     #[test]
@@ -489,11 +544,11 @@ mod tests {
         graph.add_edge(n1, n2, 115);
         graph.add_edge(n3, n4, 12);
         graph.add_edge(n4, n5, 13);
-        let result = decompose_weakly_connected_components(&graph);
+        let result = decompose_weakly_connected_components_with_mappings(&graph);
         debug_assert_eq!(result.len(), 3);
-        let first = result[2].clone();
-        let second = result[1].clone();
-        let third = result[0].clone();
+        let first = result[2].0.clone();
+        let second = result[1].0.clone();
+        let third = result[0].0.clone();
         debug_assert_eq!(first.node_count(), 1);
         debug_assert_eq!(first.edge_count(), 1);
         debug_assert_eq!(second.node_count(), 2);
@@ -513,12 +568,28 @@ mod tests {
         debug_assert_eq!(second.edge_data(1.into()), &11);
         debug_assert_eq!(third.edge_data(1.into()), &12);
         debug_assert_eq!(third.edge_data(0.into()), &13);
+
+        for (result, node_mapping, edge_mapping) in &result {
+            for node in result.node_indices() {
+                debug_assert_eq!(
+                    result.node_data(node),
+                    graph.node_data(node_mapping[node.as_usize()])
+                );
+            }
+
+            for edge in result.edge_indices() {
+                debug_assert_eq!(
+                    result.edge_data(edge),
+                    graph.edge_data(edge_mapping[edge.as_usize()])
+                );
+            }
+        }
     }
 
     #[test]
     fn test_decompose_weakly_connected_components_empty_graph() {
         let graph = PetGraph::<(), ()>::new();
-        let result = decompose_weakly_connected_components(&graph);
+        let result = decompose_weakly_connected_components_with_mappings(&graph);
         debug_assert_eq!(result.len(), 0);
     }
 
@@ -542,9 +613,9 @@ mod tests {
         let _e8 = graph.add_edge(n4, n3, 18);
         let _e9 = graph.add_edge(n0, n4, 19);
         let _e10 = graph.add_edge(n2, n2, 20);
-        let result = decompose_weakly_connected_components(&graph);
+        let result = decompose_weakly_connected_components_with_mappings(&graph);
         debug_assert_eq!(result.len(), 1);
-        let result = result.first().unwrap();
+        let (result, node_mapping, edge_mapping) = result.first().unwrap();
         debug_assert_eq!(result.node_count(), graph.node_count());
         debug_assert_eq!(result.edge_count(), graph.edge_count());
 
@@ -566,6 +637,20 @@ mod tests {
             edge_data,
             vec![10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 105]
         );
+
+        for node in result.node_indices() {
+            debug_assert_eq!(
+                result.node_data(node),
+                graph.node_data(node_mapping[node.as_usize()])
+            );
+        }
+
+        for edge in result.edge_indices() {
+            debug_assert_eq!(
+                result.edge_data(edge),
+                graph.edge_data(edge_mapping[edge.as_usize()])
+            );
+        }
     }
 
     #[test]
@@ -588,9 +673,9 @@ mod tests {
         let _e8 = graph.add_edge(n4, n3, 18);
         let _e9 = graph.add_edge(n1, n4, 19);
         let _e10 = graph.add_edge(n2, n2, 20);
-        let result = decompose_weakly_connected_components(&graph);
+        let result = decompose_weakly_connected_components_with_mappings(&graph);
         debug_assert_eq!(result.len(), 1);
-        let result = result.first().unwrap();
+        let (result, node_mapping, edge_mapping) = result.first().unwrap();
         debug_assert_eq!(result.node_count(), graph.node_count());
         debug_assert_eq!(result.edge_count(), graph.edge_count());
 
@@ -612,6 +697,20 @@ mod tests {
             edge_data,
             vec![10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 155]
         );
+
+        for node in result.node_indices() {
+            debug_assert_eq!(
+                result.node_data(node),
+                graph.node_data(node_mapping[node.as_usize()])
+            );
+        }
+
+        for edge in result.edge_indices() {
+            debug_assert_eq!(
+                result.edge_data(edge),
+                graph.edge_data(edge_mapping[edge.as_usize()])
+            );
+        }
     }
 
     #[test]
