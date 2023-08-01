@@ -25,8 +25,7 @@ where
     let mut visited = vec![false; graph.node_count()];
     let mut bfs = PreOrderUndirectedBfs::new_without_start(graph);
 
-    while !nodes.is_empty() {
-        let start = nodes.pop().unwrap();
+    while let Some(start) = nodes.pop() {
         if visited[start.as_usize()] {
             continue;
         }
