@@ -252,8 +252,8 @@ pub trait NavigableGraph: ImmutableGraphContainer + Sized {
 pub trait WalkableGraph: GraphBase + Sized {
     /// Create a node-centric walk over the given nodes in this graph.
     fn create_node_walk<
-        WalkType: for<'a> NodeWalk<'a, Self, SubwalkType> + FromIterator<Self::NodeIndex>,
-        SubwalkType: for<'a> NodeWalk<'a, Self, SubwalkType> + ?Sized,
+        WalkType: NodeWalk<Self, SubwalkType> + FromIterator<Self::NodeIndex>,
+        SubwalkType: NodeWalk<Self, SubwalkType> + ?Sized,
     >(
         &self,
         walk: &[Self::NodeIndex],
@@ -263,8 +263,8 @@ pub trait WalkableGraph: GraphBase + Sized {
 
     /// Create an empty node-centric walk in this graph.
     fn create_empty_node_walk<
-        WalkType: for<'a> NodeWalk<'a, Self, SubwalkType> + Default,
-        SubwalkType: for<'a> NodeWalk<'a, Self, SubwalkType> + ?Sized,
+        WalkType: NodeWalk<Self, SubwalkType> + Default,
+        SubwalkType: NodeWalk<Self, SubwalkType> + ?Sized,
     >(
         &self,
     ) -> WalkType {
@@ -273,8 +273,8 @@ pub trait WalkableGraph: GraphBase + Sized {
 
     /// Create an edge-centric walk over the given edges in this graph.
     fn create_edge_walk<
-        WalkType: for<'a> EdgeWalk<'a, Self, SubwalkType> + FromIterator<Self::EdgeIndex>,
-        SubwalkType: for<'a> EdgeWalk<'a, Self, SubwalkType> + ?Sized,
+        WalkType: EdgeWalk<Self, SubwalkType> + FromIterator<Self::EdgeIndex>,
+        SubwalkType: EdgeWalk<Self, SubwalkType> + ?Sized,
     >(
         &self,
         walk: &[Self::EdgeIndex],
@@ -284,8 +284,8 @@ pub trait WalkableGraph: GraphBase + Sized {
 
     /// Create an empty edge-centric walk in this graph.
     fn create_empty_edge_walk<
-        WalkType: for<'a> EdgeWalk<'a, Self, SubwalkType> + Default,
-        SubwalkType: for<'a> EdgeWalk<'a, Self, SubwalkType> + ?Sized,
+        WalkType: EdgeWalk<Self, SubwalkType> + Default,
+        SubwalkType: EdgeWalk<Self, SubwalkType> + ?Sized,
     >(
         &self,
     ) -> WalkType {
