@@ -4,11 +4,13 @@ use std::marker::PhantomData;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 /// A node index that can be `None`.
+///
 /// This is a hack to get a small sized `Option<NodeIndex>` by storing the `None` variant as `IndexType::max_value()`.
 /// If Rust ever adds support for integer types with invalid values other than 0, this type becomes obsolete.
 pub struct OptionalNodeIndex<IndexType: Sized>(IndexType);
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 /// An edge index that can be `None`.
+///
 /// This is a hack to get a small sized `Option<EdgeIndex>` by storing the `None` variant as `IndexType::max_value()`.
 /// If Rust ever adds support for integer types with invalid values other than 0, this type becomes obsolete.
 pub struct OptionalEdgeIndex<IndexType: Sized>(IndexType);
@@ -20,6 +22,7 @@ pub struct NodeIndex<IndexType: Sized>(IndexType);
 pub struct EdgeIndex<IndexType: Sized>(IndexType);
 
 /// A graph index that can be `None`.
+///
 /// This is a hack to get a small sized `Option<GraphIndex>` by storing the `None` variant as `IndexType::max_value()`.
 /// If Rust ever adds support for integer types with invalid values other than 0, this trait becomes obsolete.
 pub trait OptionalGraphIndex<MirrorGraphIndex: GraphIndex<Self>>:

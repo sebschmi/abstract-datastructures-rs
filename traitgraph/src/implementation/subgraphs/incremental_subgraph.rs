@@ -9,6 +9,7 @@ use std::iter::Filter;
 type IntegerType = usize;
 
 /// A subgraph that stores the presence or absence of a node or edge using integers.
+///
 /// Additionally, this subgraph has a current step that can be altered.
 /// Nodes and edges are added with that step, and only nodes and edges with a step lower or equal to the current one are counted as present.
 /// This allows to combine multiple subgraphs into one, if they are totally ordered by the subset relation.

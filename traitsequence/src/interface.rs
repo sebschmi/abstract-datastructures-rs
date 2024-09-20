@@ -151,6 +151,7 @@ pub trait Sequence<Item, Subsequence: Sequence<Item, Subsequence> + ?Sized>:
 }
 
 /// A type behaving like a mutable sequence over the type `Item`.
+///
 /// That is, its items can be mutated, but the sequence it self can not.
 /// For a sequence where items can be appended, rearranged etc. see [EditableSequence].
 pub trait SequenceMut<Item, Subsequence: SequenceMut<Item, Subsequence> + ?Sized>:
@@ -183,6 +184,7 @@ pub trait CloneableSequence<Item: Clone, Subsequence: CloneableSequence<Item, Su
 }
 
 /// A type behaving like a sequence over the type `Item` that can be edited.
+///
 /// This sequences items can not necessarily be mutated themselves, but they can be rearranged or new items can be appended etc.
 /// For a sequence where the items themselves can be mutated, see [SequenceMut].
 pub trait EditableSequence<Item, Subsequence: Sequence<Item, Subsequence> + ?Sized>:

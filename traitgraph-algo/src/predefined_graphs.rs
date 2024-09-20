@@ -3,6 +3,7 @@ use rand::Rng;
 use traitgraph::interface::DynamicGraph;
 
 /// Adds a binary tree to the given graph.
+///
 /// The first added node is the root of the tree.
 /// A negative depth adds no nodes to the graph, a depth of 0 just the root, a depth of 1 the root an its children, and so on.
 pub fn create_binary_tree<Graph: DynamicGraph>(

@@ -82,6 +82,7 @@ pub type PostOrderUndirectedDfs<Graph> = DfsPostOrderTraversal<
 >;
 
 /// A generic preorder graph traversal.
+///
 /// The traversal is generic over the graph implementation,
 /// as well as the direction of the search (`NeighborStrategy`),
 /// the order of processing (`QueueStrategy`) and the queue implementation itself (`Queue`).
@@ -239,6 +240,7 @@ impl<
 }
 
 /// A generic depth first postorder graph traversal.
+///
 /// The traversal is generic over the graph implementation,
 /// as well as the direction of the search (`NeighborStrategy`)
 /// and the queue implementation (`Queue`).

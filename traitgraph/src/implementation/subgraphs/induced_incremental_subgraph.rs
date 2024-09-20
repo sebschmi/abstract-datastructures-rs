@@ -7,6 +7,7 @@ use std::marker::PhantomData;
 type IntegerType = usize;
 
 /// A subgraph that stores the presence or absence of a node using integers.
+///
 /// Additionally, this subgraph has a current step that can be altered.
 /// Nodes are added with that step, and only nodes with a step lower or equal to the current one are counted as present.
 /// This allows to combine multiple subgraphs into one, if they are totally ordered by the subset relation.

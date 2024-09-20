@@ -26,8 +26,9 @@ where
         .collect()
 }
 
-/// Returns the weakly connected components of a graph,
-/// as well as a mapping from node indices in the WCCs to node indices in the source graph,
+/// Returns the weakly connected components of a graph.
+///
+/// Also returns a mapping from node indices in the WCCs to node indices in the source graph,
 /// and a mapping from edge indices in the WCCs to edge indices in the source graph.
 ///
 /// If the graph is empty, no WCCs are returned.

@@ -1,6 +1,7 @@
 use crate::dijkstra::{DijkstraWeight, NodeWeightArray};
 
 /// An epoch counter array.
+///
 /// This can be used to check if an index is current by comparing its entry in the epoch array to the current epoch.
 /// To unmark all values, the current epoch can be increased in O(1). Only overflows have to be handled by resetting all epoch counters.
 pub struct EpochArray {
