@@ -19,4 +19,4 @@ rust-version = "1.65.0"
 petgraph = "0.6.2"
 num-traits = "0.2.14"
 bitvec = "1.0.1"
-traitsequence = {version = "2.0.0", path = "../traitsequence"}
+traitsequence = {version = "3.0.0", path = "../traitsequence"}
