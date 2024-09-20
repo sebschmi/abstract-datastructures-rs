@@ -9,6 +9,9 @@ members = [
 ]
 resolver = "2"
 
+[workspace.package]
+rust-version = "1.74.0"
+
 [profile.release]
 debug = true
 lto = true
