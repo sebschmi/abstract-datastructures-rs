@@ -19,9 +19,9 @@ rust-version.workspace = true
 hashbrown_dijkstra_node_weight_array = []
 
 [dependencies]
-traitgraph = {version = "5.0.0", path = "../traitgraph"}
-rand = "0.8.4"
-hashbrown = {version = "0.14.0"}
+traitgraph = { version = "5.0.0", path = "../traitgraph" }
+rand = "0.9.0"
+hashbrown = { version = "0.15.2" }
 
 [dev-dependencies]
 criterion = "0.5.1"
