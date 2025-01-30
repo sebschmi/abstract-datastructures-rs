@@ -99,8 +99,24 @@ impl<
 where
     <Self as SubgraphBase>::RootGraph: ImmutableGraphContainer,
 {
-    type NodeIndices<'a> = UnionIndexIterator<NodeIndex, OptionalNodeIndex, Graph0::NodeIndices<'a>, Graph1::NodeIndices<'a>> where Self: 'a;
-    type EdgeIndices<'a> = UnionIndexIterator<EdgeIndex, OptionalEdgeIndex, Graph0::EdgeIndices<'a>, Graph1::EdgeIndices<'a>> where Self: 'a;
+    type NodeIndices<'a>
+        = UnionIndexIterator<
+        NodeIndex,
+        OptionalNodeIndex,
+        Graph0::NodeIndices<'a>,
+        Graph1::NodeIndices<'a>,
+    >
+    where
+        Self: 'a;
+    type EdgeIndices<'a>
+        = UnionIndexIterator<
+        EdgeIndex,
+        OptionalEdgeIndex,
+        Graph0::EdgeIndices<'a>,
+        Graph1::EdgeIndices<'a>,
+    >
+    where
+        Self: 'a;
     type NodeIndicesCopied = UnionIndexIterator<
         NodeIndex,
         OptionalNodeIndex,

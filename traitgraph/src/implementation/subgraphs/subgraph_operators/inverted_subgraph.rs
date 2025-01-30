@@ -77,8 +77,14 @@ impl<Graph: ImmutableGraphContainer + SubgraphBase> ImmutableGraphContainer
 where
     <Graph as SubgraphBase>::RootGraph: ImmutableGraphContainer,
 {
-    type NodeIndices<'a> = InvertedIndexIterator<Self::NodeIndex, Self::OptionalNodeIndex, Graph::NodeIndices<'a>> where Self: 'a;
-    type EdgeIndices<'a> = InvertedIndexIterator<Self::EdgeIndex, Self::OptionalEdgeIndex, Graph::EdgeIndices<'a>> where Self: 'a;
+    type NodeIndices<'a>
+        = InvertedIndexIterator<Self::NodeIndex, Self::OptionalNodeIndex, Graph::NodeIndices<'a>>
+    where
+        Self: 'a;
+    type EdgeIndices<'a>
+        = InvertedIndexIterator<Self::EdgeIndex, Self::OptionalEdgeIndex, Graph::EdgeIndices<'a>>
+    where
+        Self: 'a;
     type NodeIndicesCopied =
         InvertedIndexIterator<Self::NodeIndex, Self::OptionalNodeIndex, Graph::NodeIndicesCopied>;
     type EdgeIndicesCopied =

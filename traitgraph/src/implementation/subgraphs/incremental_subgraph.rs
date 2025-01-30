@@ -96,8 +96,14 @@ impl<'a, Graph: ImmutableGraphContainer> IncrementalSubgraph<'a, Graph> {
 }
 
 impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for IncrementalSubgraph<'_, Graph> {
-    type NodeIndices<'a> = Filter<Graph::NodeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::NodeIndex) -> bool>> where Self: 'a;
-    type EdgeIndices<'a> = Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::EdgeIndex) -> bool>> where Self: 'a;
+    type NodeIndices<'a>
+        = Filter<Graph::NodeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::NodeIndex) -> bool>>
+    where
+        Self: 'a;
+    type EdgeIndices<'a>
+        = Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::EdgeIndex) -> bool>>
+    where
+        Self: 'a;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.parent_graph
@@ -155,9 +161,18 @@ impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for IncrementalSubg
 }
 
 impl<Graph: NavigableGraph> NavigableGraph for IncrementalSubgraph<'_, Graph> {
-    type OutNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::OutNeighbors<'a>, Self> where Self: 'a;
-    type InNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::InNeighbors<'a>, Self> where Self: 'a;
-    type EdgesBetween<'a> = FilterEdgeIndexIterator<'a, <Graph as NavigableGraph>::EdgesBetween<'a>, Self> where Self: 'a;
+    type OutNeighbors<'a>
+        = FilterNeighborIterator<'a, <Graph as NavigableGraph>::OutNeighbors<'a>, Self>
+    where
+        Self: 'a;
+    type InNeighbors<'a>
+        = FilterNeighborIterator<'a, <Graph as NavigableGraph>::InNeighbors<'a>, Self>
+    where
+        Self: 'a;
+    type EdgesBetween<'a>
+        = FilterEdgeIndexIterator<'a, <Graph as NavigableGraph>::EdgesBetween<'a>, Self>
+    where
+        Self: 'a;
 
     fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_> {
         FilterNeighborIterator::new(self.parent_graph.out_neighbors(node_id), self)

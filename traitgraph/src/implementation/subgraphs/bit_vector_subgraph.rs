@@ -39,8 +39,16 @@ impl<Graph: GraphBase> GraphBase for BitVectorSubgraph<'_, Graph> {
 }
 
 impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for BitVectorSubgraph<'_, Graph> {
-    type NodeIndices<'a> = std::iter::Filter<Graph::NodeIndices<'a>, Box<dyn 'a + Fn(&Graph::NodeIndex) -> bool>> where Self: 'a, Graph: 'a;
-    type EdgeIndices<'a> = std::iter::Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&Graph::EdgeIndex) -> bool>> where Self: 'a, Graph: 'a;
+    type NodeIndices<'a>
+        = std::iter::Filter<Graph::NodeIndices<'a>, Box<dyn 'a + Fn(&Graph::NodeIndex) -> bool>>
+    where
+        Self: 'a,
+        Graph: 'a;
+    type EdgeIndices<'a>
+        = std::iter::Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&Graph::EdgeIndex) -> bool>>
+    where
+        Self: 'a,
+        Graph: 'a;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.parent_graph
@@ -104,9 +112,18 @@ impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer for BitVectorSubgra
 }
 
 impl<Graph: NavigableGraph> NavigableGraph for BitVectorSubgraph<'_, Graph> {
-    type OutNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::OutNeighbors<'a>, Self> where Self: 'a;
-    type InNeighbors<'a> = FilterNeighborIterator<'a, <Graph as NavigableGraph>::InNeighbors<'a>, Self> where Self: 'a;
-    type EdgesBetween<'a> = FilterEdgeIndexIterator<'a, <Graph as NavigableGraph>::EdgesBetween<'a>, Self> where Self: 'a;
+    type OutNeighbors<'a>
+        = FilterNeighborIterator<'a, <Graph as NavigableGraph>::OutNeighbors<'a>, Self>
+    where
+        Self: 'a;
+    type InNeighbors<'a>
+        = FilterNeighborIterator<'a, <Graph as NavigableGraph>::InNeighbors<'a>, Self>
+    where
+        Self: 'a;
+    type EdgesBetween<'a>
+        = FilterEdgeIndexIterator<'a, <Graph as NavigableGraph>::EdgesBetween<'a>, Self>
+    where
+        Self: 'a;
 
     fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_> {
         FilterNeighborIterator::new(self.parent_graph.out_neighbors(node_id), self)

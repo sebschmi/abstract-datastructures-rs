@@ -123,8 +123,20 @@ impl<
 impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer
     for InducedIncrementalSubgraph<'_, Graph>
 {
-    type NodeIndices<'a> = FilterNodeIndexIterator<'a, <Self as GraphBase>::NodeIndex, <Self as GraphBase>::OptionalNodeIndex, <Graph as ImmutableGraphContainer>::NodeIndices<'a>, Self> where Self: 'a;
-    type EdgeIndices<'a> = Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::EdgeIndex) -> bool>> where Self: 'a;
+    type NodeIndices<'a>
+        = FilterNodeIndexIterator<
+        'a,
+        <Self as GraphBase>::NodeIndex,
+        <Self as GraphBase>::OptionalNodeIndex,
+        <Graph as ImmutableGraphContainer>::NodeIndices<'a>,
+        Self,
+    >
+    where
+        Self: 'a;
+    type EdgeIndices<'a>
+        = Filter<Graph::EdgeIndices<'a>, Box<dyn 'a + Fn(&<Graph as GraphBase>::EdgeIndex) -> bool>>
+    where
+        Self: 'a;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         FilterNodeIndexIterator {

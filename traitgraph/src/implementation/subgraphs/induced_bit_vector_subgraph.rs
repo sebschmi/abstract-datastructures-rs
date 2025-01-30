@@ -26,7 +26,7 @@ where
     }
 }
 
-impl<'a, Graph: GraphBase> GraphBase for InducedBitVectorSubgraph<'a, Graph> {
+impl<Graph: GraphBase> GraphBase for InducedBitVectorSubgraph<'_, Graph> {
     type NodeData = Graph::NodeData;
     type EdgeData = Graph::EdgeData;
     type OptionalNodeIndex = Graph::OptionalNodeIndex;
@@ -35,11 +35,25 @@ impl<'a, Graph: GraphBase> GraphBase for InducedBitVectorSubgraph<'a, Graph> {
     type EdgeIndex = Graph::EdgeIndex;
 }
 
-impl<'a, Graph: ImmutableGraphContainer> ImmutableGraphContainer
-    for InducedBitVectorSubgraph<'a, Graph>
+impl<Graph: ImmutableGraphContainer> ImmutableGraphContainer
+    for InducedBitVectorSubgraph<'_, Graph>
 {
-    type NodeIndices<'node_indices> = std::iter::Filter<Graph::NodeIndices<'node_indices>, Box<dyn 'node_indices + Fn(&Graph::NodeIndex) -> bool>> where Self: 'node_indices, Graph: 'node_indices;
-    type EdgeIndices<'edge_indices> = std::iter::Filter<Graph::EdgeIndices<'edge_indices>, Box<dyn 'edge_indices + Fn(&Graph::EdgeIndex) -> bool>> where Self: 'edge_indices, Graph: 'edge_indices;
+    type NodeIndices<'node_indices>
+        = std::iter::Filter<
+        Graph::NodeIndices<'node_indices>,
+        Box<dyn 'node_indices + Fn(&Graph::NodeIndex) -> bool>,
+    >
+    where
+        Self: 'node_indices,
+        Graph: 'node_indices;
+    type EdgeIndices<'edge_indices>
+        = std::iter::Filter<
+        Graph::EdgeIndices<'edge_indices>,
+        Box<dyn 'edge_indices + Fn(&Graph::EdgeIndex) -> bool>,
+    >
+    where
+        Self: 'edge_indices,
+        Graph: 'edge_indices;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.parent_graph
@@ -99,8 +113,8 @@ impl<'a, Graph: ImmutableGraphContainer> ImmutableGraphContainer
     }
 }
 
-impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
-    for InducedBitVectorSubgraph<'a, Graph>
+impl<Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
+    for InducedBitVectorSubgraph<'_, Graph>
 {
     type RootGraph = Graph::RootGraph;
 
@@ -109,8 +123,8 @@ impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> SubgraphBase
     }
 }
 
-impl<'a, Graph: ImmutableGraphContainer + SubgraphBase> MutableSubgraph
-    for InducedBitVectorSubgraph<'a, Graph>
+impl<Graph: ImmutableGraphContainer + SubgraphBase> MutableSubgraph
+    for InducedBitVectorSubgraph<'_, Graph>
 where
     Self: GraphBase<
         NodeIndex = <Graph as GraphBase>::NodeIndex,

@@ -225,12 +225,11 @@ impl<
     }
 }
 impl<
-        'a,
         Graph: StaticGraph,
         NeighborStrategy: TraversalNeighborStrategy<Graph>,
         QueueStrategy: TraversalQueueStrategy<Graph, Queue>,
         Queue: BidirectedQueue<Graph::NodeIndex>,
-    > Iterator for PreOrderTraversal<'a, Graph, NeighborStrategy, QueueStrategy, Queue>
+    > Iterator for PreOrderTraversal<'_, Graph, NeighborStrategy, QueueStrategy, Queue>
 {
     type Item = NodeOrEdge<Graph::NodeIndex, Graph::EdgeIndex>;
 
@@ -260,7 +259,6 @@ pub struct DfsPostOrderTraversal<
 }
 
 impl<
-        'a,
         Graph: StaticGraph,
         NeighborStrategy: TraversalNeighborStrategy<Graph>,
         Queue: BidirectedQueue<Graph::NodeIndex>,
@@ -311,7 +309,7 @@ impl<
     }
 
     /// Computes and returns the next node in depth-first search postorder.
-    pub fn next(&mut self, graph: &'a Graph) -> Option<Graph::NodeIndex> {
+    pub fn next(&mut self, graph: &'_ Graph) -> Option<Graph::NodeIndex> {
         while let Some(first) = self.queue.pop_back() {
             let rank_entry = &mut self.rank[first.as_usize()];
             if *rank_entry == Self::explored_rank() {
@@ -409,7 +407,7 @@ impl<'a> AllowedNodesForbiddenSubgraph<'a> {
         Self { allowed_nodes }
     }
 }
-impl<'a, Graph: GraphBase> ForbiddenSubgraph<Graph> for AllowedNodesForbiddenSubgraph<'a> {
+impl<Graph: GraphBase> ForbiddenSubgraph<Graph> for AllowedNodesForbiddenSubgraph<'_> {
     fn is_node_forbidden(&self, node: Graph::NodeIndex) -> bool {
         !self.allowed_nodes[node.as_usize()]
     }
@@ -473,8 +471,15 @@ pub struct ForwardNeighborStrategy;
 impl<Graph: NavigableGraph + ImmutableGraphContainer> TraversalNeighborStrategy<Graph>
     for ForwardNeighborStrategy
 {
-    type Iterator<'a> = Graph::OutNeighbors<'a> where Self: 'a, Graph: 'a;
-    type EdgeNeighborIterator<'a> = std::iter::Once<Graph::NodeIndex> where Graph: 'a;
+    type Iterator<'a>
+        = Graph::OutNeighbors<'a>
+    where
+        Self: 'a,
+        Graph: 'a;
+    type EdgeNeighborIterator<'a>
+        = std::iter::Once<Graph::NodeIndex>
+    where
+        Graph: 'a;
 
     fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_> {
         graph.out_neighbors(node)
@@ -494,8 +499,15 @@ pub struct BackwardNeighborStrategy;
 impl<Graph: NavigableGraph + ImmutableGraphContainer> TraversalNeighborStrategy<Graph>
     for BackwardNeighborStrategy
 {
-    type Iterator<'a> = Graph::InNeighbors<'a> where Self: 'a, Graph: 'a;
-    type EdgeNeighborIterator<'a> = std::iter::Once<Graph::NodeIndex> where Graph: 'a;
+    type Iterator<'a>
+        = Graph::InNeighbors<'a>
+    where
+        Self: 'a,
+        Graph: 'a;
+    type EdgeNeighborIterator<'a>
+        = std::iter::Once<Graph::NodeIndex>
+    where
+        Graph: 'a;
 
     fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_> {
         graph.in_neighbors(node)
@@ -519,9 +531,15 @@ type InOutNeighborsChain<OutNeighbors, InNeighbors> = std::iter::Chain<
 impl<Graph: NavigableGraph + ImmutableGraphContainer> TraversalNeighborStrategy<Graph>
     for UndirectedNeighborStrategy
 {
-    type Iterator<'a> = InOutNeighborsChain<Graph::OutNeighbors<'a>, Graph::InNeighbors<'a>> where Self: 'a, Graph: 'a;
-    type EdgeNeighborIterator<'a> =
-        std::iter::Chain<std::iter::Once<Graph::NodeIndex>, std::iter::Once<Graph::NodeIndex>> where Graph: 'a;
+    type Iterator<'a>
+        = InOutNeighborsChain<Graph::OutNeighbors<'a>, Graph::InNeighbors<'a>>
+    where
+        Self: 'a,
+        Graph: 'a;
+    type EdgeNeighborIterator<'a>
+        = std::iter::Chain<std::iter::Once<Graph::NodeIndex>, std::iter::Once<Graph::NodeIndex>>
+    where
+        Graph: 'a;
 
     fn neighbor_iterator(graph: &Graph, node: Graph::NodeIndex) -> Self::Iterator<'_> {
         graph.out_neighbors(node).chain(graph.in_neighbors(node))

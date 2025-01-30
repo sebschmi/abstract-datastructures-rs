@@ -1,7 +1,10 @@
 use crate::interface::{CloneableSequence, Sequence, SequenceMut};
 
 impl<Item> Sequence<Item, [Item]> for [Item] {
-    type Iterator<'a> = std::slice::Iter<'a, Item> where Item: 'a;
+    type Iterator<'a>
+        = std::slice::Iter<'a, Item>
+    where
+        Item: 'a;
 
     fn iter(&self) -> Self::Iterator<'_> {
         <[Item]>::iter(self)
@@ -13,7 +16,10 @@ impl<Item> Sequence<Item, [Item]> for [Item] {
 }
 
 impl<Item> SequenceMut<Item, [Item]> for [Item] {
-    type IteratorMut<'a> = std::slice::IterMut<'a, Item> where Item: 'a;
+    type IteratorMut<'a>
+        = std::slice::IterMut<'a, Item>
+    where
+        Item: 'a;
     fn iter_mut(&mut self) -> Self::IteratorMut<'_> {
         <[Item]>::iter_mut(self)
     }

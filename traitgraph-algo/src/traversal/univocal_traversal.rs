@@ -86,8 +86,8 @@ where
     }
 }
 
-impl<'a, Graph: NavigableGraph, NeighborStrategy: TraversalNeighborStrategy<Graph>> Iterator
-    for UnivocalIterator<'a, Graph, NeighborStrategy>
+impl<Graph: NavigableGraph, NeighborStrategy: TraversalNeighborStrategy<Graph>> Iterator
+    for UnivocalIterator<'_, Graph, NeighborStrategy>
 {
     type Item = NodeOrEdge<Graph::NodeIndex, Graph::EdgeIndex>;
 

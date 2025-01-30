@@ -32,8 +32,14 @@ impl<NodeData, EdgeData> GraphBase for PetGraph<NodeData, EdgeData> {
 }
 
 impl<NodeData, EdgeData> ImmutableGraphContainer for PetGraph<NodeData, EdgeData> {
-    type NodeIndices<'a> = GraphIndices<Self::NodeIndex, Self::OptionalNodeIndex> where Self: 'a;
-    type EdgeIndices<'a> = GraphIndices<Self::EdgeIndex, Self::OptionalEdgeIndex> where Self: 'a;
+    type NodeIndices<'a>
+        = GraphIndices<Self::NodeIndex, Self::OptionalNodeIndex>
+    where
+        Self: 'a;
+    type EdgeIndices<'a>
+        = GraphIndices<Self::EdgeIndex, Self::OptionalEdgeIndex>
+    where
+        Self: 'a;
 
     type NodeIndicesCopied =
         GraphIndices<<Self as GraphBase>::NodeIndex, <Self as GraphBase>::OptionalNodeIndex>;
@@ -153,20 +159,31 @@ type PetgraphRestrictedNeighborTranslator<'a, EdgeData, EdgeIndex> = Map<
 >;
 
 impl<NodeData, EdgeData> NavigableGraph for PetGraph<NodeData, EdgeData> {
-    type OutNeighbors<'a> = PetgraphNeighborTranslator<
+    type OutNeighbors<'a>
+        = PetgraphNeighborTranslator<
         'a,
         EdgeData,
         <Self as GraphBase>::NodeIndex,
         <Self as GraphBase>::EdgeIndex,
-    > where NodeData: 'a, EdgeData: 'a;
-    type InNeighbors<'a> = PetgraphNeighborTranslator<
+    >
+    where
+        NodeData: 'a,
+        EdgeData: 'a;
+    type InNeighbors<'a>
+        = PetgraphNeighborTranslator<
         'a,
         EdgeData,
         <Self as GraphBase>::NodeIndex,
         <Self as GraphBase>::EdgeIndex,
-    > where NodeData: 'a, EdgeData: 'a;
-    type EdgesBetween<'a> =
-        PetgraphRestrictedNeighborTranslator<'a, EdgeData, <Self as GraphBase>::EdgeIndex> where NodeData: 'a, EdgeData: 'a;
+    >
+    where
+        NodeData: 'a,
+        EdgeData: 'a;
+    type EdgesBetween<'a>
+        = PetgraphRestrictedNeighborTranslator<'a, EdgeData, <Self as GraphBase>::EdgeIndex>
+    where
+        NodeData: 'a,
+        EdgeData: 'a;
 
     fn out_neighbors(&self, node_id: <Self as GraphBase>::NodeIndex) -> Self::OutNeighbors<'_> {
         debug_assert!(self.contains_node_index(node_id));
