@@ -583,7 +583,7 @@ dependencies = [
 
 [[package]]
 name = "traitgraph"
-version = "5.0.0"
+version = "8.1.1"
 dependencies = [
  "bitvec",
  "num-traits",
@@ -593,7 +593,7 @@ dependencies = [
 
 [[package]]
 name = "traitgraph-algo"
-version = "8.1.0"
+version = "8.1.1"
 dependencies = [
  "criterion",
  "hashbrown",
@@ -603,21 +603,21 @@ dependencies = [
 
 [[package]]
 name = "traitgraph-dimacs-io"
-version = "5.0.0"
+version = "8.1.1"
 dependencies = [
  "traitgraph",
 ]
 
 [[package]]
 name = "traitgraph-tsplib-io"
-version = "5.0.0"
+version = "8.1.1"
 dependencies = [
  "traitgraph",
 ]
 
 [[package]]
 name = "traitsequence"
-version = "3.0.0"
+version = "8.1.1"
 
 [[package]]
 name = "unicode-ident"

@@ -3,7 +3,7 @@ name = "traitgraph"
 description = "Abstracting over different graph representations"
 categories = ["data-structures", "mathematics", "science"]
 keywords = ["graph", "trait", "abstract", "implementation"]
-version = "5.0.0"
+version = "8.1.1"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
 edition = "2021"
 homepage = "https://github.com/sebschmi/abstract-datastructures-rs"
@@ -19,4 +19,4 @@ rust-version.workspace = true
 petgraph = "0.6.2"
 num-traits = "0.2.14"
 bitvec = "1.0.1"
-traitsequence = {version = "3.0.0", path = "../traitsequence"}
+traitsequence = {version = "8.1.1", path = "../traitsequence"}
