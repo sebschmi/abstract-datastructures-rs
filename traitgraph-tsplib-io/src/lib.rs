@@ -68,7 +68,7 @@ pub fn read_hamcircuit_from_tsplib_atsp<Graph: DynamicGraph, Reader: Read>(
         reader.read_line(&mut line).unwrap();
 
         if line.trim().starts_with("DIMENSION:") {
-            let line = line.trim().split(' ').last().unwrap();
+            let line = line.trim().split(' ').next_back().unwrap();
             node_count = Some(line.parse::<usize>().unwrap());
         }
 
@@ -191,7 +191,7 @@ pub fn read_hamcircuit_from_tsplib_tsp<Graph: DynamicGraph, Reader: Read>(
         reader.read_line(&mut line).unwrap();
 
         if line.trim().starts_with("DIMENSION:") {
-            let line = line.trim().split(' ').last().unwrap();
+            let line = line.trim().split(' ').next_back().unwrap();
             node_count = Some(line.parse::<usize>().unwrap());
             debug_assert_eq!(node_count.unwrap() % 2, 0, "Node count is odd");
             node_count = Some(node_count.unwrap() / 2);
